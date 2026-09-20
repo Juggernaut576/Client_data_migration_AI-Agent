@@ -35,6 +35,9 @@ def test_cleaner_salary_and_whitespace():
     assert "negative" in err2.lower()
 
 def test_end_to_end_pipeline():
+    global_pipeline_state.reset()
+    global_mock_target.reset_to_seed()
+
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     samples_dir = os.path.join(base_dir, "data", "sample_sources")
 

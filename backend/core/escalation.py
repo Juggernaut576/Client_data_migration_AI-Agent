@@ -101,7 +101,8 @@ class EscalationManager:
                 except Exception:
                     suggested_action_desc = "Provide a valid annual compensation number"
             elif field == "hire_date":
-                suggested_action_desc = "Provide corrected date in YYYY-MM-DD format"
+                suggested_val = "2024-01-15"
+                suggested_action_desc = "Provide corrected date in YYYY-MM-DD format (Default: '2024-01-15')"
             else:
                 suggested_action_desc = f"Provide a valid value conforming to schema for '{field}'"
 

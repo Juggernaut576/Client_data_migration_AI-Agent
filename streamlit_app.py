@@ -98,8 +98,50 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.88rem; color: #64748b; padding: 10px 16px; border-bottom: 2px solid transparent; }
     .stTabs [aria-selected="true"] { color: #4f46e5 !important; border-bottom-color: #4f46e5 !important; }
 
-    /* DataFrame styling */
-    div[data-testid="stDataFrame"] { border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); }
+    /* Segmented Navigation Tab Styling */
+    div[data-testid="stRadio"] { margin-bottom: 24px !important; }
+    div[data-testid="stRadio"] > div {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        background: #f8fafc !important;
+        padding: 6px !important;
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    div[data-testid="stRadio"] label {
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        padding: 8px 16px !important;
+        border-radius: 8px !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        cursor: pointer !important;
+        color: #475569 !important;
+        transition: all 0.15s ease !important;
+        margin: 0 !important;
+    }
+    div[data-testid="stRadio"] label:hover {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #cbd5e1 !important;
+    }
+    div[data-testid="stRadio"] label:has(input:checked) {
+        background: #ffffff !important;
+        color: #4f46e5 !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08) !important;
+    }
+    div[data-testid="stRadio"] label:has(input:checked) div,
+    div[data-testid="stRadio"] label:has(input:checked) p {
+        color: #4f46e5 !important;
+        font-weight: 700 !important;
+    }
+    div[data-testid="stRadio"] input[type="radio"] {
+        display: none !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -286,19 +328,41 @@ with st.expander("📂 Upload Custom Client Exports (.csv, .xlsx, .xls)", expand
         else:
             st.caption("Select one or more .csv / .xlsx files from your computer to run the agent.")
 
-# TABS
-tab_chat, tab_esc, tab_delta, tab_map, tab_data, tab_target, tab_audit = st.tabs([
-    "💬 AI Copilot Chat",
-    f"Escalation Queue ({summary['pending_escalations_count']})",
-    f"Delta Solutioning ({len(summary['deltas'])})",
-    "Autonomous Mappings",
-    f"Ready Target Dataset ({summary['valid_count']})",
-    "Target API & Rollback",
-    "Audit Trail"
-])
+# PERSISTENT NAVIGATION (Remembers active tab across approvals and reruns)
+NAV_KEYS = [
+    "escalations",
+    "chat",
+    "deltas",
+    "mappings",
+    "dataset",
+    "target",
+    "audit"
+]
+
+NAV_LABELS = {
+    "escalations": f"⚠️ Escalation Queue ({summary['pending_escalations_count']})",
+    "chat": "💬 AI Copilot Chat",
+    "deltas": f"📊 Delta Solutioning ({len(summary['deltas'])})",
+    "mappings": "🗺️ Autonomous Mappings",
+    "dataset": f"👥 Ready Target Dataset ({summary['valid_count']})",
+    "target": "🚀 Target API & Rollback",
+    "audit": "📜 Audit Trail"
+}
+
+if "active_nav_tab" not in st.session_state:
+    st.session_state["active_nav_tab"] = "escalations"
+
+active_tab = st.radio(
+    "Navigation",
+    options=NAV_KEYS,
+    format_func=lambda k: NAV_LABELS.get(k, k),
+    horizontal=True,
+    key="active_nav_tab",
+    label_visibility="collapsed"
+)
 
 # 0. AI COPILOT CHAT
-with tab_chat:
+if active_tab == "chat":
     st.markdown("""
     <div class="pane-header">
       <div>
@@ -316,10 +380,18 @@ with tab_chat:
             {
                 "role": "assistant",
                 "content": (
-                    "Hello! I am your Autonomous Data Migration AI Agent. I monitor file ingestion, autonomous schema mapping, "
-                    "data normalization, escalation detection, and target synchronizations.\n\n"
-                    "How can I assist you with this client migration today? You can ask me why specific records were escalated, "
-                    "request delta summaries, or click any of the quick prompts below."
+                    "👋 **Hello! I am your Autonomous Data Migration AI Agent.**\n\n"
+                    "You can operate and control the **entire migration lifecycle** directly from this chat:\n\n"
+                    "- 🚀 **`Run pipeline`** — Ingest and reconcile the client source files.\n"
+                    "- ⚠️ **`Show escalations`** — Inspect open queue items requiring review.\n"
+                    "- ✅ **`Approve all`** — Approve all recommended resolutions at once.\n"
+                    "- 👤 **`Approve Carlos Mendez`** or **`Approve ESC-...`** — Resolve a specific record.\n"
+                    "- ✏️ **`Set Carlos salary to 105000`** / **`Set Hannah date to 2024-03-15`** — Manual override.\n"
+                    "- 📊 **`Show deltas`** — Preview attribute-level diffs against target.\n"
+                    "- 🚀 **`Push to target`** — Commit validated records to Darwinbox.\n"
+                    "- ↩️ **`Rollback`** — Revert target platform synchronization.\n"
+                    "- 🔄 **`Reset`** — Reset pipeline and mock target to seed.\n\n"
+                    "What would you like to do?"
                 )
             }
         ]
@@ -330,7 +402,7 @@ with tab_chat:
             st.markdown(msg["content"])
 
     # Chat input
-    user_input = st.chat_input("Type your question here and press Enter (e.g. 'Why was EMP-1003 escalated?')...")
+    user_input = st.chat_input("Ask a question or enter a command (e.g. 'Run pipeline', 'Approve all', 'Push to target')...")
 
     if user_input:
         st.session_state["chat_history"].append({"role": "user", "content": user_input})
@@ -338,18 +410,21 @@ with tab_chat:
             st.markdown(user_input)
 
         with st.chat_message("assistant", avatar="🤖"):
-            with st.spinner("Agent thinking..."):
+            with st.spinner("Agent executing..."):
                 response = global_llm_reasoner.chat(
                     user_message=user_input,
                     history=st.session_state["chat_history"][-6:],
-                    state=summary
+                    state=summary,
+                    pipeline=global_agent_pipeline
                 )
                 reply = response.get("reply", "I processed your request.")
                 st.markdown(reply)
                 st.session_state["chat_history"].append({"role": "assistant", "content": reply})
+                if response.get("action_taken"):
+                    st.rerun()
 
 # 1. ESCALATION QUEUE (HITL)
-with tab_esc:
+elif active_tab == "escalations":
     st.markdown("""
     <div class="pane-header">
       <div>
@@ -436,7 +511,7 @@ with tab_esc:
             st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
 # 2. DELTA SOLUTIONING
-with tab_delta:
+elif active_tab == "deltas":
     tally = summary["delta_summary"]
     st.markdown(f"""
     <div class="pane-header">
@@ -471,7 +546,7 @@ with tab_delta:
         st.info("Run the ingestion pipeline to view delta analysis.")
 
 # 3. SCHEMA MAPPINGS
-with tab_map:
+elif active_tab == "mappings":
     st.markdown("""
     <div class="pane-header">
       <div>
@@ -498,7 +573,7 @@ with tab_map:
         st.info("Run the ingestion pipeline to view schema mappings.")
 
 # 4. READY TARGET DATASET
-with tab_data:
+elif active_tab == "dataset":
     st.markdown("""
     <div class="pane-header">
       <div>
@@ -514,7 +589,7 @@ with tab_data:
         st.info("No validated records loaded yet. Run the pipeline above.")
 
 # 5. TARGET API & ROLLBACK
-with tab_target:
+elif active_tab == "target":
     st.markdown("""
     <div class="pane-header">
       <div>
@@ -547,7 +622,7 @@ with tab_target:
         st.info("Target database is empty.")
 
 # 6. AUDIT TRAIL
-with tab_audit:
+elif active_tab == "audit":
     st.markdown("""
     <div class="pane-header">
       <div>

@@ -53,8 +53,11 @@ def chat_with_agent(req: ChatRequest):
     res = global_llm_reasoner.chat(
         user_message=req.message,
         history=req.history or [],
-        state=state_dump
+        state=state_dump,
+        pipeline=global_agent_pipeline
     )
+    if "summary" not in res or res["summary"] is None:
+        res["summary"] = global_agent_pipeline.get_summary()
     return res
 
 @app.get("/api/schema")

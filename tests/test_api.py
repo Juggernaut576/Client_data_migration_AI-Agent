@@ -61,6 +61,60 @@ def test_chat_endpoint():
     })
     assert res.status_code == 200
     data = res.json()
-    assert "reply" in data
-    assert "EMP-1003" in data["reply"] or "Negative" in data["reply"]
+    assert any(w in data["reply"].lower() for w in ["carlos", "salary", "1003", "escalat"])
+
+def test_chat_actions_end_to_end():
+    # 1. Reset from chat
+    res = client.post("/api/chat", json={"message": "Reset", "history": []})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["action_taken"] == "RESET"
+    assert data["summary"]["raw_records_count"] == 0
+
+    # 2. Run pipeline from chat
+    res = client.post("/api/chat", json={"message": "Run pipeline", "history": []})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["action_taken"] == "RUN_PIPELINE"
+    assert data["summary"]["raw_records_count"] > 0
+    assert data["summary"]["pending_escalations_count"] >= 3
+
+    # 3. Show escalations from chat
+    res = client.post("/api/chat", json={"message": "Show escalations", "history": []})
+    assert res.status_code == 200
+    data = res.json()
+    assert "Escalation Queue" in data["reply"]
+
+    # 4. Approve specific escalation (Carlos Mendez) from chat
+    res = client.post("/api/chat", json={"message": "Approve Carlos Mendez", "history": []})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["action_taken"] == "RESOLVE_ESCALATION"
+
+    # 5. Approve all remaining from chat
+    res = client.post("/api/chat", json={"message": "Approve all", "history": []})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["action_taken"] == "RESOLVE_ESCALATION"
+    assert data["summary"]["pending_escalations_count"] == 0
+
+    # 6. Show deltas from chat
+    res = client.post("/api/chat", json={"message": "Show deltas", "history": []})
+    assert res.status_code == 200
+    data = res.json()
+    assert "Delta Solutioning Breakdown" in data["reply"]
+
+    # 7. Push to target from chat
+    res = client.post("/api/chat", json={"message": "Push to target", "history": []})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["action_taken"] == "PUSH_TARGET"
+    assert "Target Platform Push Completed" in data["reply"]
+
+    # 8. Rollback push from chat
+    res = client.post("/api/chat", json={"message": "Rollback", "history": []})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["action_taken"] == "ROLLBACK"
+    assert "Rolled Back Successfully" in data["reply"]
 

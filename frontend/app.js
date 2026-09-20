@@ -10,19 +10,35 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchStatus();
 });
 
-// 1. TABS LOGIC
+// 1. TABS LOGIC WITH PERSISTENCE
 function initTabs() {
   const tabs = document.querySelectorAll('.tab-btn');
+  const savedTab = sessionStorage.getItem('active_tab') || 'tab-escalations';
+
+  function switchTab(tabId) {
+    tabs.forEach(t => {
+      const isActive = t.dataset.tab === tabId;
+      t.classList.toggle('active', isActive);
+      if (isActive) {
+        t.style.fontWeight = '700';
+      } else {
+        t.style.fontWeight = '';
+      }
+    });
+    document.querySelectorAll('.tab-pane').forEach(p => {
+      p.classList.toggle('active', p.id === tabId);
+    });
+    sessionStorage.setItem('active_tab', tabId);
+  }
+
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      
-      tab.classList.add('active');
-      const targetPane = document.getElementById(tab.dataset.tab);
-      if (targetPane) targetPane.classList.add('active');
+      switchTab(tab.dataset.tab);
     });
   });
+
+  // Restore active tab
+  switchTab(savedTab);
 }
 
 // 2. ACTION BUTTONS
@@ -586,6 +602,12 @@ async function sendChatMessage(userText) {
 
     // Add to history
     chatHistory.push({ role: 'assistant', content: replyText });
+
+    // 5. If action was taken or summary updated, refresh the entire dashboard
+    if (data.summary) {
+      currentSummary = data.summary;
+      renderDashboard(data.summary);
+    }
   } catch (err) {
     const typingEl = document.getElementById(typingId);
     if (typingEl) typingEl.remove();

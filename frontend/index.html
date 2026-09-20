@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Darwinbox AI Agent | Client Data Migration & Integration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- TOP NAVIGATION & STATUS -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-badge">darwinbox</div>
+        <div class="brand-title">
+          <h1>AI Migration & Integration Agent</h1>
+          <p class="subtitle">Forward Deployed Engineering Console &bull; Autonomous Entity Ingestion & HITL Supervision</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-run-sample" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Run Sample Ingestion (3 Files)
+        </button>
+        <button id="btn-reset" class="btn btn-outline">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+          Reset State
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI SUMMARY BAR -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Ingested Records</div>
+        <div class="kpi-value" id="kpi-raw">0</div>
+        <div class="kpi-meta" id="kpi-sources">0 source files</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Autonomous Cleans</div>
+        <div class="kpi-value highlight-blue" id="kpi-cleaned">0</div>
+        <div class="kpi-meta">Dates, Deduplication, Whitespace</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Escalation Queue</div>
+        <div class="kpi-value highlight-amber" id="kpi-escalations">0</div>
+        <div class="kpi-meta">Requires consultant review</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Valid Ready Records</div>
+        <div class="kpi-value highlight-emerald" id="kpi-valid">0</div>
+        <div class="kpi-meta">Conforms to target schema</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Target DB Employees</div>
+        <div class="kpi-value" id="kpi-target-db">1</div>
+        <div class="kpi-meta">Current Darwinbox state</div>
+      </div>
+    </section>
+
+    <!-- PIPELINE STAGES STEPPER -->
+    <section class="stepper-section">
+      <div class="stepper">
+        <div class="step-node active" id="step-1">
+          <span class="step-num">1</span>
+          <span class="step-name">Multi-File Ingest</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-node active" id="step-2">
+          <span class="step-num">2</span>
+          <span class="step-name">AI Schema Mapping</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-node active" id="step-3">
+          <span class="step-num">3</span>
+          <span class="step-name">Clean & Deduplicate</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-node active" id="step-4">
+          <span class="step-num">4</span>
+          <span class="step-name">Target Validation</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-node active" id="step-5">
+          <span class="step-num">5</span>
+          <span class="step-name">HITL Escalations</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-node active" id="step-6">
+          <span class="step-num">6</span>
+          <span class="step-name">Delta Solutioning</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-node" id="step-7">
+          <span class="step-num">7</span>
+          <span class="step-name">Push to Target</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB NAVIGATION -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="tab-escalations">
+        Escalation Queue <span class="badge badge-amber" id="badge-escalation-count">0</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-deltas">
+        Delta Solutioning & Diff <span class="badge" id="badge-delta-count">0</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-mappings">
+        Autonomous Mappings
+      </button>
+      <button class="tab-btn" data-tab="tab-dataset">
+        Ready Target Dataset <span class="badge badge-emerald" id="badge-ready-count">0</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-audit">
+        Audit Trail
+      </button>
+      <button class="tab-btn" data-tab="tab-target">
+        Target API & Rollback
+      </button>
+    </nav>
+
+    <!-- MAIN CONTENT AREAS -->
+    <main class="main-content">
+      <!-- 1. ESCALATION QUEUE (HITL) -->
+      <div class="tab-pane active" id="tab-escalations">
+        <div class="pane-header">
+          <div>
+            <h2>Human-in-the-Loop Escalation Queue</h2>
+            <p class="pane-desc">
+              The agent pauses <strong>only</strong> when confidence is low or conflicting source data makes autonomous resolution unsafe.
+              Resolve cases with one click or provide manual overrides.
+            </p>
+          </div>
+          <div class="filter-controls">
+            <span class="tag-filter active">All (<span id="count-all-esc">0</span>)</span>
+            <span class="tag-filter">Validation Errors</span>
+            <span class="tag-filter">Data Conflicts</span>
+          </div>
+        </div>
+
+        <div id="escalation-container" class="escalation-grid">
+          <!-- Escalation cards will be dynamically rendered here -->
+          <div class="empty-state">
+            <div class="empty-icon">✓</div>
+            <h3>No Pending Escalations</h3>
+            <p>Click "Run Sample Ingestion" above or upload client files to execute the agent pipeline.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. DELTA SOLUTIONING & DIFF -->
+      <div class="tab-pane" id="tab-deltas">
+        <div class="pane-header">
+          <div>
+            <h2>Delta Solutioning Engine</h2>
+            <p class="pane-desc">
+              Compares reconciled client data against the destination Darwinbox HR platform state prior to pushing.
+            </p>
+          </div>
+          <div class="delta-tally">
+            <span class="pill pill-green">New: <strong id="tally-new">0</strong></span>
+            <span class="pill pill-blue">Updates: <strong id="tally-update">0</strong></span>
+            <span class="pill pill-gray">No Change: <strong id="tally-noop">0</strong></span>
+            <span class="pill pill-red">Conflicts: <strong id="tally-conflict">0</strong></span>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table" id="delta-table">
+            <thead>
+              <tr>
+                <th>Entity ID</th>
+                <th>Delta Action</th>
+                <th>Employee Name</th>
+                <th>Department</th>
+                <th>Field Level Diffs (Target vs Ingested)</th>
+              </tr>
+            </thead>
+            <tbody id="delta-table-body">
+              <tr><td colspan="5" class="text-center text-muted">No delta analysis available yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. AUTONOMOUS MAPPINGS -->
+      <div class="tab-pane" id="tab-mappings">
+        <div class="pane-header">
+          <div>
+            <h2>Autonomous Schema Mappings</h2>
+            <p class="pane-desc">
+              Field mappings inferred by semantic similarity, known aliases, and data profiling without manual field-by-field configuration.
+            </p>
+          </div>
+        </div>
+        <div id="mappings-container" class="mappings-grid">
+          <!-- Mapping cards per file -->
+        </div>
+      </div>
+
+      <!-- 4. READY TARGET DATASET -->
+      <div class="tab-pane" id="tab-dataset">
+        <div class="pane-header">
+          <div>
+            <h2>Standardized Target Dataset (Clean & Validated)</h2>
+            <p class="pane-desc">Consolidated entities conforming to target schema, ready for destination sync.</p>
+          </div>
+        </div>
+        <div class="table-card">
+          <table class="data-table" id="dataset-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Title</th>
+                <th>Hire Date</th>
+                <th>Salary</th>
+                <th>Status</th>
+                <th>Phone</th>
+              </tr>
+            </thead>
+            <tbody id="dataset-table-body">
+              <tr><td colspan="9" class="text-center text-muted">No records loaded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5. AUDIT TRAIL -->
+      <div class="tab-pane" id="tab-audit">
+        <div class="pane-header">
+          <div>
+            <h2>Transformation Audit Trail</h2>
+            <p class="pane-desc">Immutable log of every field standardization, auto-merge, and human override with confidence metrics.</p>
+          </div>
+        </div>
+        <div class="audit-list" id="audit-container">
+          <!-- Audit records -->
+        </div>
+      </div>
+
+      <!-- 6. TARGET API & ROLLBACK -->
+      <div class="tab-pane" id="tab-target">
+        <div class="pane-header">
+          <div>
+            <h2>Destination Darwinbox HR System Integration</h2>
+            <p class="pane-desc">Execute the push step, monitor per-record stub response, or trigger transactional rollback.</p>
+          </div>
+        </div>
+
+        <div class="target-control-card">
+          <div class="target-action-box">
+            <div>
+              <h3>Push Processed Batch</h3>
+              <p>Sends all validated and approved records to <code>POST /api/target/employees/batch</code></p>
+            </div>
+            <button id="btn-push-target" class="btn btn-success btn-lg">
+              Push to Target Platform
+            </button>
+          </div>
+
+          <div id="push-result-box" class="push-result-box hidden">
+            <!-- Push results summary -->
+          </div>
+
+          <div class="target-db-section">
+            <h3>Live Destination Target Platform Database (<span id="target-db-count">0</span> Records)</h3>
+            <div class="table-card">
+              <table class="data-table" id="target-db-table">
+                <thead>
+                  <tr>
+                    <th>Emp ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Role</th>
+                    <th>Hire Date</th>
+                    <th>Salary</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="target-db-table-body">
+                  <!-- Live target DB rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- MANUAL EDIT MODAL -->
+    <div id="modal-edit" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-title">Manual Override</h3>
+          <button class="btn-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="modal-desc" class="text-muted"></p>
+          <div class="form-group">
+            <label id="modal-field-label">Corrected Value:</label>
+            <input type="text" id="modal-input-val" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="modal-btn-cancel">Cancel</button>
+          <button class="btn btn-primary" id="modal-btn-submit">Submit Correction</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

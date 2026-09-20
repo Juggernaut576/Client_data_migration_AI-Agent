@@ -1,0 +1,5 @@
+emp_no,first_name,last_name,work_email,dept,designation,DOJ,Annual_Salary,emp_status,mobile
+EMP-1001,  Alice  ,Smith,alice.smith@acme-corp.com,engineering,Senior Staff Engineer,15/01/2021,145000,Active,+1 (555) 234-5678
+EMP-1002,Bob,Johnson,bob.johnson@acme-corp.com,Product,Lead Product Manager,2020-06-01,138000,ACTIVE,555-876-5432
+EMP-1003,Carlos,Mendez,carlos.m@acme-corp.com,Sales,Account Executive,12-Nov-2019,-50000,Active,+1 555 456 7890
+EMP-1004,Diana,Prince,diana.prince@acme-corp.com,Human Resources,HR Generalist,2022/03/15,88000,On_Leave,(555) 789-0123

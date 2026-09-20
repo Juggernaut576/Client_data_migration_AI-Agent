@@ -1,0 +1,4 @@
+Staff_ID,given_name,family_name,contact_email,team,position,date_of_joining,compensation,work_status,phone
+EMP-1006,Fiona,Gallagher,fiona.g@acme-corp.com,Sales,Sales Lead,2021-08-10,115000,ACTIVE,+1 555-987-6543
+EMP-1007,George,Miller,george.miller@acme-corp.com,Customer Success,CS Representative,2023-11-01,72000,ACTIVE,+1 555-111-2233
+EMP-1008,Hannah,Abbott,hannah.a@acme-corp.com,Engineering,Frontend Developer,invalid-date-format-32/99,92000,Active,+1 555-444-5566

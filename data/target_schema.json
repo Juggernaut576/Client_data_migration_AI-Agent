@@ -1,0 +1,84 @@
+{
+  "entity": "Employee",
+  "version": "1.0",
+  "description": "Standard Darwinbox HR Employee Target Schema",
+  "fields": {
+    "employee_id": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "description": "Unique company identifier for the employee (e.g. EMP-101)",
+      "aliases": ["empid", "emp_no", "worker_id", "staff_id", "id", "employee_number", "badge_no"]
+    },
+    "first_name": {
+      "type": "string",
+      "required": true,
+      "unique": false,
+      "description": "Legal first name",
+      "aliases": ["fname", "first", "given_name", "forename"]
+    },
+    "last_name": {
+      "type": "string",
+      "required": true,
+      "unique": false,
+      "description": "Legal last or family name",
+      "aliases": ["lname", "last", "surname", "family_name"]
+    },
+    "email": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "format": "email",
+      "description": "Official company or primary contact email",
+      "aliases": ["work_email", "mail", "email_address", "contact_email", "e-mail"]
+    },
+    "department": {
+      "type": "string",
+      "required": true,
+      "unique": false,
+      "enum": ["Engineering", "Product", "Sales", "Human Resources", "Finance", "Operations", "Customer Success"],
+      "description": "Primary organizational department",
+      "aliases": ["dept", "division", "team", "organization_unit", "cost_center"]
+    },
+    "job_title": {
+      "type": "string",
+      "required": true,
+      "unique": false,
+      "description": "Designation or functional role",
+      "aliases": ["role", "title", "designation", "position"]
+    },
+    "hire_date": {
+      "type": "string",
+      "required": true,
+      "unique": false,
+      "format": "date",
+      "description": "Date of joining in YYYY-MM-DD format",
+      "aliases": ["doj", "date_of_joining", "joining_date", "start_date", "hired_on", "employment_date"]
+    },
+    "salary": {
+      "type": "number",
+      "required": false,
+      "unique": false,
+      "minimum": 0,
+      "description": "Annual base compensation in USD",
+      "aliases": ["compensation", "annual_salary", "ctc", "base_pay", "wage", "pay_rate"]
+    },
+    "status": {
+      "type": "string",
+      "required": true,
+      "unique": false,
+      "enum": ["ACTIVE", "INACTIVE", "ON_LEAVE"],
+      "default": "ACTIVE",
+      "description": "Current employment state",
+      "aliases": ["emp_status", "employment_status", "state", "work_status"]
+    },
+    "phone_number": {
+      "type": "string",
+      "required": false,
+      "unique": false,
+      "format": "phone",
+      "description": "Phone number with country code",
+      "aliases": ["phone", "mobile", "cell", "telephone", "contact_number"]
+    }
+  }
+}

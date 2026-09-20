@@ -264,6 +264,27 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# CUSTOM MANUAL FILE UPLOAD SECTION
+with st.expander("📂 Upload Custom Client Exports (.csv, .xlsx, .xls)", expanded=False):
+    up_c1, up_c2 = st.columns([3, 1])
+    with up_c1:
+        uploaded_files = st.file_uploader(
+            "Upload client files to reconcile and migrate",
+            type=["csv", "xlsx", "xls"],
+            accept_multiple_files=True,
+            label_visibility="collapsed"
+        )
+    with up_c2:
+        if uploaded_files:
+            if st.button("⚡ Ingest Custom Files", type="primary", use_container_width=True):
+                file_inputs = [{"filename": f.name, "content": f.read()} for f in uploaded_files]
+                with st.spinner(f"Ingesting {len(uploaded_files)} files through autonomous agent..."):
+                    global_agent_pipeline.run_pipeline(file_inputs)
+                st.success(f"Ingested {len(uploaded_files)} custom files!")
+                st.rerun()
+        else:
+            st.caption("Select one or more .csv / .xlsx files from your computer to run the agent.")
+
 # TABS
 tab_esc, tab_delta, tab_map, tab_data, tab_target, tab_audit = st.tabs([
     f"Escalation Queue ({summary['pending_escalations_count']})",

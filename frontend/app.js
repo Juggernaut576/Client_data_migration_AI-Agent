@@ -42,9 +42,41 @@ function initActionButtons() {
       alert('Error running sample pipeline: ' + err.message);
     } finally {
       btnRun.disabled = false;
-      btnRun.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Run Sample Ingestion (3 Files)`;
+      btnRun.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Run Ingestion Pipeline (3 Files)`;
     }
   });
+
+  const btnUpload = document.getElementById('btn-upload-trigger');
+  const fileInput = document.getElementById('file-input-custom');
+  if (btnUpload && fileInput) {
+    btnUpload.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async () => {
+      if (!fileInput.files || fileInput.files.length === 0) return;
+      btnUpload.disabled = true;
+      btnUpload.innerHTML = `Uploading ${fileInput.files.length} files...`;
+      
+      const formData = new FormData();
+      for (const f of fileInput.files) {
+        formData.append('files', f);
+      }
+      try {
+        const res = await fetch('/api/pipeline/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        currentSummary = data;
+        renderDashboard(data);
+        alert(`Successfully ingested ${fileInput.files.length} custom client files!`);
+      } catch (err) {
+        alert('Error uploading custom files: ' + err.message);
+      } finally {
+        btnUpload.disabled = false;
+        btnUpload.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload Client Files`;
+        fileInput.value = '';
+      }
+    });
+  }
 
   btnReset.addEventListener('click', async () => {
     if (confirm('Reset state and target database to fresh initial seed?')) {

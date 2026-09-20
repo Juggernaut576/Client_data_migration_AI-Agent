@@ -51,4 +51,4 @@ def test_run_sample_and_workflow_api():
 def test_index_html_served():
     res = client.get("/")
     assert res.status_code == 200
-    assert "Darwinbox AI Agent" in res.text
+    assert "AI Data Migration & Integration" in res.text

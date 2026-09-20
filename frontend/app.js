@@ -1,4 +1,4 @@
-// Darwinbox Migration Agent Web Client
+// Enterprise AI Data Migration Suite - Web Client
 let activeEscalationId = null;
 let currentSummary = null;
 

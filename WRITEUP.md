@@ -6,7 +6,7 @@ Client enterprise data migrations frequently stall when non-technical implementa
 - **Ingestion Engine:** Unifies heterogeneous formats (`.csv`, `.xlsx`, `.xls`) preserving source file provenance.
 - **Semantic Mapper:** Evaluates column header tokens, known HR/CRM aliases, and sample value heuristics (regex, date profiling, numeric parsing) to assign mapping confidence ($0.0 - 1.0$).
 - **Autonomous Normalizer:** Standardizes non-destructive transforms (mixed dates $\rightarrow$ ISO 8601, whitespace, proper casing, E.164 phone numbers, and non-conflicting duplicate record consolidation).
-- **Delta Solutioning Engine:** Computes state transitions against the destination Darwinbox HR platform (`NEW_RECORD`, `UPDATED_RECORD`, `NO_CHANGE`, `CONFLICT`) with field-level visual diffs.
+- **Delta Solutioning Engine:** Computes state transitions against the destination Enterprise HR platform (`NEW_RECORD`, `UPDATED_RECORD`, `NO_CHANGE`, `CONFLICT`) with field-level visual diffs.
 - **Mock Target Integration:** Transactional push endpoint with per-record validation, retry mechanics, and one-click rollback.
 
 ```
@@ -28,7 +28,7 @@ Client enterprise data migrations frequently stall when non-technical implementa
   (NEW, UPDATE, NOOP, CONFLICT)
              │
              ▼
-[Mock Target Darwinbox API] ──► [Transaction Log & Rollback]
+[Mock Target Enterprise API] ──► [Transaction Log & Rollback]
 ```
 
 ---

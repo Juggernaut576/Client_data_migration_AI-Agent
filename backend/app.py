@@ -12,7 +12,7 @@ from backend.core.pipeline import global_agent_pipeline, global_pipeline_state
 from backend.core.mock_target import global_mock_target
 
 app = FastAPI(
-    title="Darwinbox AI Data Migration & Integration Agent",
+    title="AI Data Migration & Integration Agent",
     description="Autonomous data migration agent with defensible escalation boundary and HITL UI",
     version="1.0.0"
 )

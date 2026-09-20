@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Darwinbox AI Agent | Client Data Migration & Integration</title>
+  <title>Enterprise AI Data Migration & Integration Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,116 +14,157 @@
     <!-- TOP NAVIGATION & STATUS -->
     <header class="app-header">
       <div class="brand">
-        <div class="brand-badge">darwinbox</div>
+        <div class="brand-badge">
+          <span class="brand-dot"></span>
+          <span>ENTERPRISE FDE</span>
+        </div>
         <div class="brand-title">
-          <h1>AI Migration & Integration Agent</h1>
-          <p class="subtitle">Forward Deployed Engineering Console &bull; Autonomous Entity Ingestion & HITL Supervision</p>
+          <div class="title-row">
+            <h1>AI Data Migration & Integration Suite</h1>
+            <span class="version-tag">v2.4 Production</span>
+          </div>
+          <p class="subtitle">Autonomous Multi-Source Reconciliation &bull; Defensible Escalation Boundary &bull; Human-in-the-Loop Supervision</p>
         </div>
       </div>
       <div class="header-actions">
         <button id="btn-run-sample" class="btn btn-primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          Run Sample Ingestion (3 Files)
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Run Ingestion Pipeline (3 Files)
         </button>
         <button id="btn-reset" class="btn btn-outline">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-          Reset State
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+          Reset Session
         </button>
       </div>
     </header>
 
-    <!-- KPI SUMMARY BAR -->
+    <!-- KPI METRICS SUMMARY -->
     <section class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">Ingested Records</div>
-        <div class="kpi-value" id="kpi-raw">0</div>
-        <div class="kpi-meta" id="kpi-sources">0 source files</div>
+        <div class="kpi-icon-wrap icon-purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Ingested Records</div>
+          <div class="kpi-value" id="kpi-raw">0</div>
+          <div class="kpi-meta" id="kpi-sources">0 source files loaded</div>
+        </div>
       </div>
+
       <div class="kpi-card">
-        <div class="kpi-label">Autonomous Cleans</div>
-        <div class="kpi-value highlight-blue" id="kpi-cleaned">0</div>
-        <div class="kpi-meta">Dates, Deduplication, Whitespace</div>
+        <div class="kpi-icon-wrap icon-blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Autonomous Cleans</div>
+          <div class="kpi-value highlight-blue" id="kpi-cleaned">0</div>
+          <div class="kpi-meta">Dates, deduplication & casing</div>
+        </div>
       </div>
+
       <div class="kpi-card">
-        <div class="kpi-label">Escalation Queue</div>
-        <div class="kpi-value highlight-amber" id="kpi-escalations">0</div>
-        <div class="kpi-meta">Requires consultant review</div>
+        <div class="kpi-icon-wrap icon-amber">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Escalation Queue</div>
+          <div class="kpi-value highlight-amber" id="kpi-escalations">0</div>
+          <div class="kpi-meta">Requires consultant decision</div>
+        </div>
       </div>
+
       <div class="kpi-card">
-        <div class="kpi-label">Valid Ready Records</div>
-        <div class="kpi-value highlight-emerald" id="kpi-valid">0</div>
-        <div class="kpi-meta">Conforms to target schema</div>
+        <div class="kpi-icon-wrap icon-emerald">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Validated Entities</div>
+          <div class="kpi-value highlight-emerald" id="kpi-valid">0</div>
+          <div class="kpi-meta">Target schema compliant</div>
+        </div>
       </div>
+
       <div class="kpi-card">
-        <div class="kpi-label">Target DB Employees</div>
-        <div class="kpi-value" id="kpi-target-db">1</div>
-        <div class="kpi-meta">Current Darwinbox state</div>
+        <div class="kpi-icon-wrap icon-slate">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+        </div>
+        <div class="kpi-content">
+          <div class="kpi-label">Target DB Size</div>
+          <div class="kpi-value" id="kpi-target-db">1</div>
+          <div class="kpi-meta">Target system live state</div>
+        </div>
       </div>
     </section>
 
-    <!-- PIPELINE STAGES STEPPER -->
+    <!-- PIPELINE STEPS TRACKER -->
     <section class="stepper-section">
       <div class="stepper">
         <div class="step-node active" id="step-1">
-          <span class="step-num">1</span>
-          <span class="step-name">Multi-File Ingest</span>
+          <div class="step-dot"></div>
+          <span class="step-name">1. Ingest Sources</span>
         </div>
         <div class="step-line"></div>
         <div class="step-node active" id="step-2">
-          <span class="step-num">2</span>
-          <span class="step-name">AI Schema Mapping</span>
+          <div class="step-dot"></div>
+          <span class="step-name">2. Schema Mapping</span>
         </div>
         <div class="step-line"></div>
         <div class="step-node active" id="step-3">
-          <span class="step-num">3</span>
-          <span class="step-name">Clean & Deduplicate</span>
+          <div class="step-dot"></div>
+          <span class="step-name">3. Clean & Deduplicate</span>
         </div>
         <div class="step-line"></div>
         <div class="step-node active" id="step-4">
-          <span class="step-num">4</span>
-          <span class="step-name">Target Validation</span>
+          <div class="step-dot"></div>
+          <span class="step-name">4. Target Validation</span>
         </div>
         <div class="step-line"></div>
         <div class="step-node active" id="step-5">
-          <span class="step-num">5</span>
-          <span class="step-name">HITL Escalations</span>
+          <div class="step-dot"></div>
+          <span class="step-name">5. Escalation Queue</span>
         </div>
         <div class="step-line"></div>
         <div class="step-node active" id="step-6">
-          <span class="step-num">6</span>
-          <span class="step-name">Delta Solutioning</span>
+          <div class="step-dot"></div>
+          <span class="step-name">6. Delta Review</span>
         </div>
         <div class="step-line"></div>
         <div class="step-node" id="step-7">
-          <span class="step-num">7</span>
-          <span class="step-name">Push to Target</span>
+          <div class="step-dot"></div>
+          <span class="step-name">7. Target Push & Sync</span>
         </div>
       </div>
     </section>
 
-    <!-- TAB NAVIGATION -->
+    <!-- TABS BAR -->
     <nav class="tab-nav">
       <button class="tab-btn active" data-tab="tab-escalations">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
         Escalation Queue <span class="badge badge-amber" id="badge-escalation-count">0</span>
       </button>
       <button class="tab-btn" data-tab="tab-deltas">
-        Delta Solutioning & Diff <span class="badge" id="badge-delta-count">0</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        Delta Solutioning <span class="badge" id="badge-delta-count">0</span>
       </button>
       <button class="tab-btn" data-tab="tab-mappings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
         Autonomous Mappings
       </button>
       <button class="tab-btn" data-tab="tab-dataset">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
         Ready Target Dataset <span class="badge badge-emerald" id="badge-ready-count">0</span>
       </button>
       <button class="tab-btn" data-tab="tab-audit">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
         Audit Trail
       </button>
       <button class="tab-btn" data-tab="tab-target">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg>
         Target API & Rollback
       </button>
     </nav>
 
-    <!-- MAIN CONTENT AREAS -->
+    <!-- CONTENT PANES -->
     <main class="main-content">
       <!-- 1. ESCALATION QUEUE (HITL) -->
       <div class="tab-pane active" id="tab-escalations">
@@ -131,34 +172,27 @@
           <div>
             <h2>Human-in-the-Loop Escalation Queue</h2>
             <p class="pane-desc">
-              The agent pauses <strong>only</strong> when confidence is low or conflicting source data makes autonomous resolution unsafe.
-              Resolve cases with one click or provide manual overrides.
+              The agent operates autonomously for standard operations and escalates <strong>only</strong> when encountering low-confidence schema mapping, contradictory multi-source attributes, or unresolvable domain constraint violations.
             </p>
-          </div>
-          <div class="filter-controls">
-            <span class="tag-filter active">All (<span id="count-all-esc">0</span>)</span>
-            <span class="tag-filter">Validation Errors</span>
-            <span class="tag-filter">Data Conflicts</span>
           </div>
         </div>
 
         <div id="escalation-container" class="escalation-grid">
-          <!-- Escalation cards will be dynamically rendered here -->
           <div class="empty-state">
             <div class="empty-icon">✓</div>
             <h3>No Pending Escalations</h3>
-            <p>Click "Run Sample Ingestion" above or upload client files to execute the agent pipeline.</p>
+            <p>Click "Run Ingestion Pipeline" above to process sample exports or review incoming client data.</p>
           </div>
         </div>
       </div>
 
-      <!-- 2. DELTA SOLUTIONING & DIFF -->
+      <!-- 2. DELTA SOLUTIONING -->
       <div class="tab-pane" id="tab-deltas">
         <div class="pane-header">
           <div>
             <h2>Delta Solutioning Engine</h2>
             <p class="pane-desc">
-              Compares reconciled client data against the destination Darwinbox HR platform state prior to pushing.
+              Diffs normalized records against destination target platform state to prevent redundant updates and isolate schema changes prior to commit.
             </p>
           </div>
           <div class="delta-tally">
@@ -173,11 +207,11 @@
           <table class="data-table" id="delta-table">
             <thead>
               <tr>
-                <th>Entity ID</th>
-                <th>Delta Action</th>
+                <th>Entity Identifier</th>
+                <th>Operation</th>
                 <th>Employee Name</th>
                 <th>Department</th>
-                <th>Field Level Diffs (Target vs Ingested)</th>
+                <th>Field Level Diffs (Target Database vs Incoming)</th>
               </tr>
             </thead>
             <tbody id="delta-table-body">
@@ -191,23 +225,21 @@
       <div class="tab-pane" id="tab-mappings">
         <div class="pane-header">
           <div>
-            <h2>Autonomous Schema Mappings</h2>
+            <h2>Autonomous Schema Field Mappings</h2>
             <p class="pane-desc">
-              Field mappings inferred by semantic similarity, known aliases, and data profiling without manual field-by-field configuration.
+              Source-to-target field associations proposed via semantic similarity, synonym matching, and statistical data profiling.
             </p>
           </div>
         </div>
-        <div id="mappings-container" class="mappings-grid">
-          <!-- Mapping cards per file -->
-        </div>
+        <div id="mappings-container" class="mappings-grid"></div>
       </div>
 
       <!-- 4. READY TARGET DATASET -->
       <div class="tab-pane" id="tab-dataset">
         <div class="pane-header">
           <div>
-            <h2>Standardized Target Dataset (Clean & Validated)</h2>
-            <p class="pane-desc">Consolidated entities conforming to target schema, ready for destination sync.</p>
+            <h2>Target Entity Dataset (Cleaned & Validated)</h2>
+            <p class="pane-desc">Consolidated entities conforming to target specification ready for destination synchronization.</p>
           </div>
         </div>
         <div class="table-card">
@@ -218,7 +250,7 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>Department</th>
-                <th>Title</th>
+                <th>Job Title</th>
                 <th>Hire Date</th>
                 <th>Salary</th>
                 <th>Status</th>
@@ -237,40 +269,36 @@
         <div class="pane-header">
           <div>
             <h2>Transformation Audit Trail</h2>
-            <p class="pane-desc">Immutable log of every field standardization, auto-merge, and human override with confidence metrics.</p>
+            <p class="pane-desc">Immutable verification log tracking every autonomous modification, merge, and consultant intervention.</p>
           </div>
         </div>
-        <div class="audit-list" id="audit-container">
-          <!-- Audit records -->
-        </div>
+        <div class="audit-list" id="audit-container"></div>
       </div>
 
       <!-- 6. TARGET API & ROLLBACK -->
       <div class="tab-pane" id="tab-target">
         <div class="pane-header">
           <div>
-            <h2>Destination Darwinbox HR System Integration</h2>
-            <p class="pane-desc">Execute the push step, monitor per-record stub response, or trigger transactional rollback.</p>
+            <h2>Target Enterprise Platform Integration</h2>
+            <p class="pane-desc">Execute the batch commit step to the destination REST API, monitor record-level responses, or perform transactional rollback.</p>
           </div>
         </div>
 
         <div class="target-control-card">
           <div class="target-action-box">
             <div>
-              <h3>Push Processed Batch</h3>
-              <p>Sends all validated and approved records to <code>POST /api/target/employees/batch</code></p>
+              <h3>Execute Batch Synchronization</h3>
+              <p>Dispatches all validated and approved records to <code>POST /api/target/employees/batch</code></p>
             </div>
             <button id="btn-push-target" class="btn btn-success btn-lg">
-              Push to Target Platform
+              Synchronize to Target System
             </button>
           </div>
 
-          <div id="push-result-box" class="push-result-box hidden">
-            <!-- Push results summary -->
-          </div>
+          <div id="push-result-box" class="push-result-box hidden"></div>
 
           <div class="target-db-section">
-            <h3>Live Destination Target Platform Database (<span id="target-db-count">0</span> Records)</h3>
+            <h3>Live Destination Target Platform State (<span id="target-db-count">0</span> Records)</h3>
             <div class="table-card">
               <table class="data-table" id="target-db-table">
                 <thead>
@@ -279,15 +307,13 @@
                     <th>Name</th>
                     <th>Email</th>
                     <th>Department</th>
-                    <th>Role</th>
+                    <th>Job Title</th>
                     <th>Hire Date</th>
                     <th>Salary</th>
                     <th>Status</th>
                   </tr>
                 </thead>
-                <tbody id="target-db-table-body">
-                  <!-- Live target DB rows -->
-                </tbody>
+                <tbody id="target-db-table-body"></tbody>
               </table>
             </div>
           </div>
@@ -299,23 +325,22 @@
     <div id="modal-edit" class="modal-backdrop hidden">
       <div class="modal-card">
         <div class="modal-header">
-          <h3 id="modal-title">Manual Override</h3>
+          <h3 id="modal-title">Consultant Override</h3>
           <button class="btn-close" id="modal-close">&times;</button>
         </div>
         <div class="modal-body">
           <p id="modal-desc" class="text-muted"></p>
           <div class="form-group">
-            <label id="modal-field-label">Corrected Value:</label>
+            <label id="modal-field-label">Verified Value:</label>
             <input type="text" id="modal-input-val" class="form-control" />
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" id="modal-btn-cancel">Cancel</button>
-          <button class="btn btn-primary" id="modal-btn-submit">Submit Correction</button>
+          <button class="btn btn-primary" id="modal-btn-submit">Confirm Override</button>
         </div>
       </div>
     </div>
-
   </div>
 
   <script src="/static/app.js"></script>

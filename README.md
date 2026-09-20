@@ -1,4 +1,4 @@
-# Darwinbox AI Agent: Client Data Migration & Integration
+# Enterprise AI Agent: Client Data Migration & Integration
 
 An autonomous, Human-in-the-Loop (HITL) AI Data Migration Agent built for Forward Deployed Engineers and Implementation Consultants. The agent ingests heterogeneous client HR/CRM exports (CSV & Excel), autonomously maps schemas, normalizes data, respects a defensible escalation boundary, performs delta analysis, and pushes to a mock target platform with full transaction rollback support.
 
@@ -28,14 +28,14 @@ An autonomous, Human-in-the-Loop (HITL) AI Data Migration Agent built for Forwar
    - Side-by-side field diff viewer and immutable audit trail.
 
 5. **Delta Solutioning:**
-   - Analyzes incoming dataset against the destination Darwinbox HR database to classify records into:
+   - Analyzes incoming dataset against the destination HR database to classify records into:
      - `NEW_RECORD` (Insert)
      - `UPDATED_RECORD` (Update with field-level diffs)
      - `NO_CHANGE` (Identical data, skipped)
      - `CONFLICT` (Requires review)
 
 6. **Mock System Integration with 1-Click Rollback:**
-   - Destination Darwinbox HR API stub (`POST /api/target/employees/batch`).
+   - Destination HR API stub (`POST /api/target/employees/batch`).
    - Per-record success/failure reporting.
    - Instant transactional rollback: restores the target database to its pre-push snapshot.
 

@@ -6,7 +6,7 @@ import streamlit as st
 
 # Configure page layout
 st.set_page_config(
-    page_title="AI Data Migration & Integration Suite",
+    page_title="Enterprise AI Data Migration & Integration Suite",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -19,30 +19,61 @@ from backend.core.mock_target import global_mock_target
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data", "sample_sources")
+CSS_PATH = os.path.join(BASE_DIR, "frontend", "style.css")
 
-# Custom CSS for polished enterprise look
+# Inject Google Fonts
+st.markdown("""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+""", unsafe_allow_html=True)
+
+# Inject exact same CSS stylesheet from frontend/style.css
+if os.path.exists(CSS_PATH):
+    with open(CSS_PATH, "r", encoding="utf-8") as f:
+        custom_css = f.read()
+    st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
+
+# Additional Streamlit specific overrides to match identical theme
 st.markdown("""
 <style>
-    .main-title { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.2rem; }
-    .subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem; }
-    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
-    .tag-conflict { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
-    .tag-validation { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-    .tag-ambiguity { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
-    .diff-before { background: #fff1f2; color: #be123c; text-decoration: line-through; padding: 2px 6px; border-radius: 4px; }
-    .diff-after { background: #ecfdf5; color: #047857; padding: 2px 6px; border-radius: 4px; }
+    .block-container { padding-top: 1.8rem; padding-bottom: 2rem; max-width: 1440px; }
+    header[data-testid="stHeader"] { background-color: #f8fafc; }
+    .stTabs [data-baseweb="tab-list"] { gap: 6px; border-bottom: 1px solid #e2e8f0; }
+    .stTabs [data-baseweb="tab"] { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.88rem; color: #64748b; padding: 10px 16px; }
+    .stTabs [aria-selected="true"] { color: #4f46e5 !important; border-bottom-color: #4f46e5 !important; }
+    div[data-testid="stExpander"] { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); margin-bottom: 12px; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">⚡ AI Data Migration & Integration Suite</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Autonomous Multi-Source Reconciliation &bull; Defensible Escalation Boundary &bull; Human-in-the-Loop Supervision</div>', unsafe_allow_html=True)
+# Fetch Current Pipeline Summary
+summary = global_agent_pipeline.get_summary()
+
+# RENDER IDENTICAL TOP HEADER
+st.markdown("""
+<div class="app-header" style="margin-bottom: 20px;">
+  <div class="brand">
+    <div class="brand-badge">
+      <span class="brand-dot"></span>
+      <span>ENTERPRISE FDE</span>
+    </div>
+    <div class="brand-title">
+      <div class="title-row">
+        <h1>AI Data Migration & Integration Suite</h1>
+        <span class="version-tag">v2.4 Production</span>
+      </div>
+      <p class="subtitle">Autonomous Multi-Source Reconciliation &bull; Defensible Escalation Boundary &bull; Human-in-the-Loop Supervision</p>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 # SIDEBAR CONTROLS
 with st.sidebar:
-    st.header("Migration Control")
+    st.markdown("### Migration Controls")
     st.info("Ingest client raw files (CSV & Excel) and run autonomous mapping & cleaning pipeline.")
     
-    if st.button("🚀 Run Pipeline (3 Sample Files)", use_container_width=True, type="primary"):
+    if st.button("🚀 Run Pipeline (3 Files)", use_container_width=True, type="primary"):
         sample_files = glob.glob(os.path.join(DATA_DIR, "*.*"))
         file_inputs = [{"path": p} for p in sample_files if p.endswith((".csv", ".xlsx", ".xls"))]
         with st.spinner("Processing files through autonomous pipeline..."):
@@ -50,7 +81,8 @@ with st.sidebar:
         st.success("Ingestion & reconciliation complete!")
         st.rerun()
 
-    uploaded_files = st.file_uploader("Or Upload Custom Client Exports (.csv, .xlsx)", accept_multiple_files=True)
+    st.markdown("---")
+    uploaded_files = st.file_uploader("Upload Client Exports (.csv, .xlsx)", accept_multiple_files=True)
     if uploaded_files and st.button("Ingest Uploaded Files", use_container_width=True):
         file_inputs = [{"filename": f.name, "content": f.read()} for f in uploaded_files]
         with st.spinner("Processing custom uploads..."):
@@ -65,20 +97,109 @@ with st.sidebar:
         st.info("State reset to initial seed.")
         st.rerun()
 
-# FETCH CURRENT SUMMARY
-summary = global_agent_pipeline.get_summary()
+# RENDER IDENTICAL KPI SUMMARY CARDS
+st.markdown(f"""
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap icon-purple">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+    </div>
+    <div class="kpi-content">
+      <div class="kpi-label">Ingested Records</div>
+      <div class="kpi-value">{summary['raw_records_count']}</div>
+      <div class="kpi-meta">{len(summary['sources'])} source files loaded</div>
+    </div>
+  </div>
 
-# METRICS BAR
-col1, col2, col3, col4, col5 = st.columns(5)
-col1.metric("Ingested Records", summary["raw_records_count"], f"{len(summary['sources'])} files")
-col2.metric("Autonomous Cleans", summary["cleaned_count"], "Dates, casing, dedupe")
-col3.metric("Escalation Queue", summary["pending_escalations_count"], "Requires review")
-col4.metric("Validated Entities", summary["valid_count"], "Target compliant")
-col5.metric("Target DB Size", len(summary["target_database_preview"]), "Live destination")
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap icon-blue">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+    </div>
+    <div class="kpi-content">
+      <div class="kpi-label">Autonomous Cleans</div>
+      <div class="kpi-value highlight-blue">{summary['cleaned_count']}</div>
+      <div class="kpi-meta">Dates, dedupe & casing</div>
+    </div>
+  </div>
 
-st.markdown("---")
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap icon-amber">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+    </div>
+    <div class="kpi-content">
+      <div class="kpi-label">Escalation Queue</div>
+      <div class="kpi-value highlight-amber">{summary['pending_escalations_count']}</div>
+      <div class="kpi-meta">Requires consultant decision</div>
+    </div>
+  </div>
 
-# MAIN TABS
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap icon-emerald">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    </div>
+    <div class="kpi-content">
+      <div class="kpi-label">Validated Entities</div>
+      <div class="kpi-value highlight-emerald">{summary['valid_count']}</div>
+      <div class="kpi-meta">Target schema compliant</div>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon-wrap icon-slate">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+    </div>
+    <div class="kpi-content">
+      <div class="kpi-label">Target DB Size</div>
+      <div class="kpi-value">{len(summary['target_database_preview'])}</div>
+      <div class="kpi-meta">Target system live state</div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+# RENDER IDENTICAL STEPPER TRACKER
+st.markdown("""
+<div class="stepper-section">
+  <div class="stepper">
+    <div class="step-node active">
+      <div class="step-dot"></div>
+      <span class="step-name">1. Ingest Sources</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node active">
+      <div class="step-dot"></div>
+      <span class="step-name">2. Schema Mapping</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node active">
+      <div class="step-dot"></div>
+      <span class="step-name">3. Clean & Deduplicate</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node active">
+      <div class="step-dot"></div>
+      <span class="step-name">4. Target Validation</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node active">
+      <div class="step-dot"></div>
+      <span class="step-name">5. Escalation Queue</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node active">
+      <div class="step-dot"></div>
+      <span class="step-name">6. Delta Review</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node">
+      <div class="step-dot"></div>
+      <span class="step-name">7. Target Push & Sync</span>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+# TABS
 tab_esc, tab_delta, tab_map, tab_data, tab_target, tab_audit = st.tabs([
     f"⚠️ Escalation Queue ({summary['pending_escalations_count']})",
     f"🔄 Delta Solutioning ({len(summary['deltas'])})",
@@ -90,62 +211,108 @@ tab_esc, tab_delta, tab_map, tab_data, tab_target, tab_audit = st.tabs([
 
 # 1. ESCALATION QUEUE (HITL)
 with tab_esc:
-    st.subheader("Human-in-the-Loop Escalation Queue")
-    st.write("The agent pauses **only** when confidence is low or conflicting source data makes autonomous resolution unsafe.")
+    st.markdown("""
+    <div class="pane-header">
+      <div>
+        <h2>Human-in-the-Loop Escalation Queue</h2>
+        <p class="pane-desc">
+          The agent operates autonomously for standard operations and escalates <strong>only</strong> when encountering low-confidence schema mapping, contradictory multi-source attributes, or unresolvable domain constraint violations.
+        </p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     pending = summary["pending_escalations"]
     if not pending:
-        st.success("✅ No pending escalations. All records conform safely to schema or have been resolved.")
+        st.markdown("""
+        <div class="empty-state">
+          <div class="empty-icon">✓</div>
+          <h3>No Pending Escalations</h3>
+          <p>All records conform safely to schema or have been resolved by consultant.</p>
+        </div>
+        """, unsafe_allow_html=True)
     else:
         for esc in pending:
-            category_color = "tag-ambiguity"
-            if esc["category"] == "DATA_CONFLICT": category_color = "tag-conflict"
-            elif esc["category"] == "VALIDATION_FAILURE": category_color = "tag-validation"
+            tag_class = "tag-ambiguity"
+            if esc["category"] == "DATA_CONFLICT": tag_class = "tag-conflict"
+            elif esc["category"] == "VALIDATION_FAILURE": tag_class = "tag-validation"
 
-            with st.expander(f"**[{esc['category']}]** {esc['title']} — Entity: `{esc.get('entity_id') or 'N/A'}`", expanded=True):
-                c1, c2 = st.columns([3, 2])
-                with c1:
-                    st.markdown(f"**Target Field:** `{esc.get('field') or 'N/A'}`")
-                    st.markdown(f"**Source File:** `{esc.get('source_file')}`")
-                    st.markdown(f"**Current Raw Value:** `{esc.get('current_value')}`")
-                    st.info(f"**Agent Reasoning:** {esc['agent_reasoning']}")
-                with c2:
-                    st.markdown(f"**Confidence Score:** `{esc['confidence_score'] * 100:.0f}%`")
-                    st.markdown(f"**Recommended Action:** {esc['suggested_action']}")
-                    
-                    b1, b2, b3 = st.columns(3)
-                    with b1:
-                        if st.button("Approve", key=f"app_{esc['id']}", type="primary"):
-                            global_agent_pipeline.resolve_escalation_and_reprocess(
-                                escalation_id=esc["id"],
-                                resolution_type="APPROVED_SUGGESTION",
-                                resolved_value=esc["suggested_value"]
-                            )
-                            st.rerun()
-                    with b2:
-                        override_val = st.text_input("Override", value=str(esc["suggested_value"] or ""), key=f"txt_{esc['id']}", label_visibility="collapsed")
-                        if st.button("Apply", key=f"ovr_{esc['id']}"):
-                            global_agent_pipeline.resolve_escalation_and_reprocess(
-                                escalation_id=esc["id"],
-                                resolution_type="MANUAL_OVERRIDE",
-                                resolved_value=override_val
-                            )
-                            st.rerun()
-                    with b3:
-                        if st.button("Reject", key=f"rej_{esc['id']}"):
-                            global_agent_pipeline.resolve_escalation_and_reprocess(
-                                escalation_id=esc["id"],
-                                resolution_type="REJECTED"
-                            )
-                            st.rerun()
+            st.markdown(f"""
+            <div class="escalation-card" style="margin-bottom: 16px;">
+              <div>
+                <div class="esc-header">
+                  <span class="esc-tag {tag_class}">{esc['category'].replace('_', ' ')}</span>
+                  <span class="esc-meta">Confidence: {esc['confidence_score']*100:.0f}%</span>
+                </div>
+                <h3 class="esc-title">{esc['title']}</h3>
+                <p class="esc-meta">{f"Source: {esc.get('source_file')}" if esc.get('source_file') else ''} &bull; Entity: <code>{esc.get('entity_id') or 'N/A'}</code></p>
+                
+                <div class="esc-context-box">
+                  <div class="esc-context-row">
+                    <span style="color: #64748b;">Target Field:</span>
+                    <strong>{esc.get('field') or 'N/A'}</strong>
+                  </div>
+                  <div class="esc-context-row">
+                    <span style="color: #64748b;">Current Raw Value:</span>
+                    <code style="color: #be123c;">{esc.get('current_value')}</code>
+                  </div>
+                  <div class="esc-context-row">
+                    <span style="color: #64748b;">Suggested Action:</span>
+                    <span style="color: #047857; font-weight: 600;">{esc.get('suggested_action')}</span>
+                  </div>
+                </div>
+
+                <div class="esc-reasoning">
+                  <strong>Agent Reasoning:</strong> {esc['agent_reasoning']}
+                </div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            col_a, col_b, col_c = st.columns([1.5, 2, 1])
+            with col_a:
+                if st.button("✓ Approve Suggestion", key=f"app_{esc['id']}", type="primary"):
+                    global_agent_pipeline.resolve_escalation_and_reprocess(
+                        escalation_id=esc["id"],
+                        resolution_type="APPROVED_SUGGESTION",
+                        resolved_value=esc["suggested_value"]
+                    )
+                    st.rerun()
+            with col_b:
+                override_input = st.text_input("Override value", value=str(esc["suggested_value"] or ""), key=f"in_{esc['id']}", label_visibility="collapsed")
+                if st.button("Apply Manual Override", key=f"btn_ovr_{esc['id']}"):
+                    global_agent_pipeline.resolve_escalation_and_reprocess(
+                        escalation_id=esc["id"],
+                        resolution_type="MANUAL_OVERRIDE",
+                        resolved_value=override_input
+                    )
+                    st.rerun()
+            with col_c:
+                if st.button("✕ Reject Record", key=f"btn_rej_{esc['id']}"):
+                    global_agent_pipeline.resolve_escalation_and_reprocess(
+                        escalation_id=esc["id"],
+                        resolution_type="REJECTED"
+                    )
+                    st.rerun()
+            st.markdown("<hr style='margin: 12px 0 20px 0; border: none; border-bottom: 1px solid #e2e8f0;'>", unsafe_allow_html=True)
 
 # 2. DELTA SOLUTIONING
 with tab_delta:
-    st.subheader("Delta Solutioning Engine")
-    st.write("Diffs incoming records against destination target database state prior to commit.")
-    
     tally = summary["delta_summary"]
-    st.markdown(f"**Summary:** `New: {tally.get('new', 0)}` | `Updates: {tally.get('update', 0)}` | `No Change: {tally.get('no_change', 0)}` | `Conflicts: {tally.get('conflict', 0)}`")
+    st.markdown(f"""
+    <div class="pane-header">
+      <div>
+        <h2>Delta Solutioning Engine</h2>
+        <p class="pane-desc">Diffs normalized records against destination target platform state to prevent redundant updates prior to commit.</p>
+      </div>
+      <div class="delta-tally">
+        <span class="pill pill-green">New: <strong>{tally.get('new', 0)}</strong></span>
+        <span class="pill pill-blue">Updates: <strong>{tally.get('update', 0)}</strong></span>
+        <span class="pill pill-gray">No Change: <strong>{tally.get('no_change', 0)}</strong></span>
+        <span class="pill pill-red">Conflicts: <strong>{tally.get('conflict', 0)}</strong></span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     deltas = summary["deltas"]
     if deltas:
@@ -166,8 +333,14 @@ with tab_delta:
 
 # 3. SCHEMA MAPPINGS
 with tab_map:
-    st.subheader("Autonomous Schema Mappings")
-    st.write("Columns mapped autonomously via semantic similarity, alias ontology, and sample value profiling.")
+    st.markdown("""
+    <div class="pane-header">
+      <div>
+        <h2>Autonomous Schema Field Mappings</h2>
+        <p class="pane-desc">Source-to-target field associations proposed via semantic similarity, synonym matching, and statistical data profiling.</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     mappings_by_file = summary.get("column_mappings", {})
     if mappings_by_file:
@@ -187,15 +360,20 @@ with tab_map:
 
 # 4. READY TARGET DATASET
 with tab_data:
-    st.subheader("Target Entity Dataset (Cleaned & Validated)")
-    st.write("Consolidated entities conforming to target specification ready for destination synchronization.")
+    st.markdown("""
+    <div class="pane-header">
+      <div>
+        <h2>Target Entity Dataset (Cleaned & Validated)</h2>
+        <p class="pane-desc">Consolidated entities conforming to target specification ready for destination synchronization.</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     valid_records = summary.get("valid_records_preview", [])
     if valid_records:
         clean_df = pd.DataFrame([{k: v for k, v in r.items() if not k.startswith("_")} for r in valid_records])
         st.dataframe(clean_df, use_container_width=True)
 
-        # 1-Click CSV Download
         csv_bytes = clean_df.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="📥 Download Cleaned CSV",
@@ -209,11 +387,17 @@ with tab_data:
 
 # 5. TARGET API & ROLLBACK
 with tab_target:
-    st.subheader("Target Enterprise Platform Integration")
-    st.write("Execute batch commit to destination target API, view per-record results, or trigger transactional rollback.")
+    st.markdown("""
+    <div class="pane-header">
+      <div>
+        <h2>Target Enterprise Platform Integration</h2>
+        <p class="pane-desc">Execute the batch commit step to the destination REST API, monitor record-level responses, or perform transactional rollback.</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    col_btn, col_res = st.columns([1, 2])
-    with col_btn:
+    c_btn, c_res = st.columns([1, 2])
+    with c_btn:
         if st.button("🚀 Synchronize to Target Platform", type="primary", use_container_width=True):
             res = global_agent_pipeline.push_to_target()
             st.success(f"Push committed! Transaction ID: {res['transaction_id']}")
@@ -227,7 +411,7 @@ with tab_target:
             st.warning(f"Rollback status: {rb_res.get('status')}. Reverted {rb_res.get('reverted_records_count')} records.")
             st.rerun()
 
-    st.markdown("#### Live Target Platform Database")
+    st.markdown("#### Live Destination Database State")
     db_data = summary.get("target_database_preview", [])
     if db_data:
         st.dataframe(pd.DataFrame(db_data), use_container_width=True)
@@ -236,8 +420,14 @@ with tab_target:
 
 # 6. AUDIT TRAIL
 with tab_audit:
-    st.subheader("Transformation Audit Trail")
-    st.write("Immutable verification log tracking every autonomous modification, merge, and consultant intervention.")
+    st.markdown("""
+    <div class="pane-header">
+      <div>
+        <h2>Transformation Audit Trail</h2>
+        <p class="pane-desc">Immutable verification log tracking every autonomous modification, merge, and consultant intervention.</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     audit_entries = summary.get("audit_trail", [])
     if audit_entries:

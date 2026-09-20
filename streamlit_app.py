@@ -184,7 +184,7 @@ with head_col2:
     act_col1, act_col2, act_col3 = st.columns([1.2, 1.1, 0.8])
     sample_files_list = [p for p in glob.glob(os.path.join(DATA_DIR, "*.*")) if p.endswith((".csv", ".xlsx", ".xls"))]
     with act_col1:
-        if st.button(f"▶ Run Pipeline ({len(sample_files_list)} Files)", type="primary", use_container_width=True):
+        if st.button("▶ Run Migration Pipeline", type="primary", use_container_width=True):
             file_inputs = [{"path": p} for p in sample_files_list]
             with st.spinner("Processing files through autonomous pipeline..."):
                 global_agent_pipeline.run_pipeline(file_inputs)

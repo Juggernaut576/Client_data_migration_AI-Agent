@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initActionButtons();
   initModal();
+  initChat();
   fetchStatus();
 });
 
@@ -455,3 +456,151 @@ window.rollbackTransaction = async function(txId) {
     }
   }
 };
+
+// 13. AI COPILOT CHAT SYSTEM
+let chatHistory = [];
+
+function formatMarkdown(text) {
+  if (!text) return '';
+  let formatted = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Bold **text**
+  formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Italic *text*
+  formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Inline code `code`
+  formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Line breaks
+  formatted = formatted.replace(/\n/g, '<br>');
+  return formatted;
+}
+
+function initChat() {
+  const btnSend = document.getElementById('chat-btn-send');
+  const chatInput = document.getElementById('chat-input');
+  const chips = document.querySelectorAll('.prompt-chip');
+
+  if (!btnSend || !chatInput) return;
+
+  const triggerSend = () => {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    chatInput.value = '';
+    sendChatMessage(text);
+  };
+
+  btnSend.addEventListener('click', triggerSend);
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      triggerSend();
+    }
+  });
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const q = chip.dataset.query;
+      if (q) {
+        sendChatMessage(q);
+      }
+    });
+  });
+}
+
+async function sendChatMessage(userText) {
+  const container = document.getElementById('chat-messages-container');
+  if (!container) return;
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // 1. Render User Message
+  const userHtml = `
+    <div class="chat-msg chat-msg-user">
+      <div class="chat-avatar user-avatar">👤</div>
+      <div class="chat-bubble">
+        <div class="chat-sender">You <span class="chat-time">${timeStr}</span></div>
+        <div class="chat-body">${formatMarkdown(userText)}</div>
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', userHtml);
+  container.scrollTop = container.scrollHeight;
+
+  // Add to local history
+  chatHistory.push({ role: 'user', content: userText });
+
+  // 2. Render Typing Indicator
+  const typingId = 'typing-' + Date.now();
+  const typingHtml = `
+    <div class="chat-msg chat-msg-agent" id="${typingId}">
+      <div class="chat-avatar agent-avatar">🤖</div>
+      <div class="chat-bubble">
+        <div class="chat-sender">Migration AI Agent <span class="chat-time">Analyzing...</span></div>
+        <div class="chat-body">
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  container.insertAdjacentHTML('beforeend', typingHtml);
+  container.scrollTop = container.scrollHeight;
+
+  // 3. Post to /api/chat
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: userText,
+        history: chatHistory.slice(-6)
+      })
+    });
+    const data = await res.json();
+    const replyText = data.reply || 'I processed your request, but received an empty response.';
+
+    // Remove typing bubble
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+
+    // 4. Render Agent Reply
+    const agentHtml = `
+      <div class="chat-msg chat-msg-agent">
+        <div class="chat-avatar agent-avatar">🤖</div>
+        <div class="chat-bubble">
+          <div class="chat-sender">
+            Migration AI Agent
+            <span class="chat-time">${timeStr}</span>
+          </div>
+          <div class="chat-body">${formatMarkdown(replyText)}</div>
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', agentHtml);
+    container.scrollTop = container.scrollHeight;
+
+    // Add to history
+    chatHistory.push({ role: 'assistant', content: replyText });
+  } catch (err) {
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+
+    const errorHtml = `
+      <div class="chat-msg chat-msg-agent">
+        <div class="chat-avatar agent-avatar" style="background: #ef4444;">⚠️</div>
+        <div class="chat-bubble" style="border-color: #fca5a5;">
+          <div class="chat-sender" style="color: #be123c;">Agent Communication Error</div>
+          <div class="chat-body" style="color: #991b1b;">Failed to connect to agent service: ${err.message}</div>
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', errorHtml);
+    container.scrollTop = container.scrollHeight;
+  }
+}
+

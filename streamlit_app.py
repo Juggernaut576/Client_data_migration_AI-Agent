@@ -15,6 +15,7 @@ st.set_page_config(
 from backend.core.schema import target_schema
 from backend.core.pipeline import global_agent_pipeline, global_pipeline_state
 from backend.core.mock_target import global_mock_target
+from backend.core.llm_agent import global_llm_reasoner
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -286,7 +287,8 @@ with st.expander("📂 Upload Custom Client Exports (.csv, .xlsx, .xls)", expand
             st.caption("Select one or more .csv / .xlsx files from your computer to run the agent.")
 
 # TABS
-tab_esc, tab_delta, tab_map, tab_data, tab_target, tab_audit = st.tabs([
+tab_chat, tab_esc, tab_delta, tab_map, tab_data, tab_target, tab_audit = st.tabs([
+    "💬 AI Copilot Chat",
     f"Escalation Queue ({summary['pending_escalations_count']})",
     f"Delta Solutioning ({len(summary['deltas'])})",
     "Autonomous Mappings",
@@ -294,6 +296,80 @@ tab_esc, tab_delta, tab_map, tab_data, tab_target, tab_audit = st.tabs([
     "Target API & Rollback",
     "Audit Trail"
 ])
+
+# 0. AI COPILOT CHAT
+with tab_chat:
+    st.markdown("""
+    <div class="pane-header">
+      <div>
+        <h2>Autonomous Migration AI Copilot</h2>
+        <p class="pane-desc">
+          Converse with the Migration AI Agent in real time. Ask why specific records were escalated, inspect deltas, or query autonomous mapping decisions.
+        </p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Initialize chat history in session state
+    if "chat_history" not in st.session_state:
+        st.session_state["chat_history"] = [
+            {
+                "role": "assistant",
+                "content": (
+                    "Hello! I am your Autonomous Data Migration AI Agent. I monitor file ingestion, autonomous schema mapping, "
+                    "data normalization, escalation detection, and target synchronizations.\n\n"
+                    "How can I assist you with this client migration today? You can ask me why specific records were escalated, "
+                    "request delta summaries, or click any of the quick prompts below."
+                )
+            }
+        ]
+
+    # Quick prompt buttons
+    st.markdown("**Quick Prompts:**")
+    qp_col1, qp_col2, qp_col3 = st.columns(3)
+    quick_query = None
+    with qp_col1:
+        if st.button("❓ Why was EMP-1003 escalated?", key="qp1", use_container_width=True):
+            quick_query = "Why was EMP-1003 Carlos Mendez escalated?"
+        if st.button("📊 Show Delta Summary", key="qp2", use_container_width=True):
+            quick_query = "Show me the Delta Solutioning summary"
+    with qp_col2:
+        if st.button("⚡ Explain EMP-1006 Conflict", key="qp3", use_container_width=True):
+            quick_query = "Explain the data conflict on EMP-1006 Fiona Gallagher"
+        if st.button("🧹 What was cleaned?", key="qp4", use_container_width=True):
+            quick_query = "What cleaning steps were performed autonomously?"
+    with qp_col3:
+        if st.button("⚠️ Why did EMP-1008 fail?", key="qp5", use_container_width=True):
+            quick_query = "Why did EMP-1008 Hannah Abbott fail validation?"
+        if st.button("🚀 Can I push to target?", key="qp6", use_container_width=True):
+            quick_query = "Is it safe to push to the target platform now?"
+
+    # Display chat messages
+    for msg in st.session_state["chat_history"]:
+        with st.chat_message(msg["role"], avatar="🤖" if msg["role"] == "assistant" else "👤"):
+            st.markdown(msg["content"])
+
+    # Chat input
+    user_input = st.chat_input("Ask the agent anything about this migration...")
+    active_prompt = quick_query or user_input
+
+    if active_prompt:
+        st.session_state["chat_history"].append({"role": "user", "content": active_prompt})
+        with st.chat_message("user", avatar="👤"):
+            st.markdown(active_prompt)
+
+        with st.chat_message("assistant", avatar="🤖"):
+            with st.spinner("Agent analyzing migration context..."):
+                response = global_llm_reasoner.chat(
+                    user_message=active_prompt,
+                    history=st.session_state["chat_history"][-6:],
+                    state=summary
+                )
+                reply = response.get("reply", "I processed your request.")
+                st.markdown(reply)
+                st.session_state["chat_history"].append({"role": "assistant", "content": reply})
+        if quick_query:
+            st.rerun()
 
 # 1. ESCALATION QUEUE (HITL)
 with tab_esc:

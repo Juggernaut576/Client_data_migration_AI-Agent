@@ -52,3 +52,15 @@ def test_index_html_served():
     res = client.get("/")
     assert res.status_code == 200
     assert "AI Data Migration & Integration" in res.text
+    assert "AI Copilot Chat" in res.text
+
+def test_chat_endpoint():
+    res = client.post("/api/chat", json={
+        "message": "Why was EMP-1003 Carlos Mendez escalated?",
+        "history": []
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert "reply" in data
+    assert "EMP-1003" in data["reply"] or "Negative" in data["reply"]
+

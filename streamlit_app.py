@@ -433,90 +433,90 @@ if len(st.session_state["chat_history"]) > 1:
 with st.expander("🔍 Raw Data Inspector & Audit Logs (Optional)", expanded=False):
     insp_subtab = st.selectbox("Select View", ["Escalations Queue", "Delta Solutioning", "Autonomous Mappings", "Target Dataset", "Target Sync & Rollback", "Audit Trail"])
     if insp_subtab == "Escalations Queue":
-    st.markdown("""
-    <div class="pane-header">
-      <div>
-        <h2>Human-in-the-Loop Escalation Queue</h2>
-        <p class="pane-desc">
-          The agent operates autonomously for standard operations and escalates <strong>only</strong> when encountering low-confidence schema mapping, contradictory multi-source attributes, or unresolvable domain constraint violations.
-        </p>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    pending = summary["pending_escalations"]
-    if not pending:
         st.markdown("""
-        <div class="empty-state">
-          <div class="empty-icon">✓</div>
-          <h3>No Pending Escalations</h3>
-          <p>All records conform safely to schema or have been resolved by consultant.</p>
+        <div class="pane-header">
+          <div>
+            <h2>Human-in-the-Loop Escalation Queue</h2>
+            <p class="pane-desc">
+              The agent operates autonomously for standard operations and escalates <strong>only</strong> when encountering low-confidence schema mapping, contradictory multi-source attributes, or unresolvable domain constraint violations.
+            </p>
+          </div>
         </div>
         """, unsafe_allow_html=True)
-    else:
-        for esc in pending:
-            tag_class = "tag-ambiguity"
-            if esc["category"] == "DATA_CONFLICT": tag_class = "tag-conflict"
-            elif esc["category"] == "VALIDATION_FAILURE": tag_class = "tag-validation"
 
-            st.markdown(f"""
-            <div class="escalation-card" style="margin-bottom: 12px;">
-              <div>
-                <div class="esc-header">
-                  <span class="esc-tag {tag_class}">{esc['category'].replace('_', ' ')}</span>
-                  <span class="esc-meta">Confidence: {esc['confidence_score']*100:.0f}%</span>
-                </div>
-                <h3 class="esc-title">{esc['title']}</h3>
-                <p class="esc-meta">{f"Source: {esc.get('source_file')}" if esc.get('source_file') else ''} &bull; Entity: <code>{esc.get('entity_id') or 'N/A'}</code></p>
-                
-                <div class="esc-context-box">
-                  <div class="esc-context-row">
-                    <span style="color: #64748b;">Target Field:</span>
-                    <strong>{esc.get('field') or 'N/A'}</strong>
-                  </div>
-                  <div class="esc-context-row">
-                    <span style="color: #64748b;">Current Raw Value:</span>
-                    <code style="color: #be123c;">{esc.get('current_value')}</code>
-                  </div>
-                  <div class="esc-context-row">
-                    <span style="color: #64748b;">Suggested Action:</span>
-                    <span style="color: #047857; font-weight: 600;">{esc.get('suggested_action')}</span>
-                  </div>
-                </div>
-
-                <div class="esc-reasoning">
-                  <strong>Agent Reasoning:</strong> {esc['agent_reasoning']}
-                </div>
-              </div>
+        pending = summary["pending_escalations"]
+        if not pending:
+            st.markdown("""
+            <div class="empty-state">
+              <div class="empty-icon">✓</div>
+              <h3>No Pending Escalations</h3>
+              <p>All records conform safely to schema or have been resolved by consultant.</p>
             </div>
             """, unsafe_allow_html=True)
+        else:
+            for esc in pending:
+                tag_class = "tag-ambiguity"
+                if esc["category"] == "DATA_CONFLICT": tag_class = "tag-conflict"
+                elif esc["category"] == "VALIDATION_FAILURE": tag_class = "tag-validation"
 
-            col_a, col_b, col_c = st.columns([1.5, 2.5, 1])
-            with col_a:
-                if st.button("✓ Approve Suggestion", key=f"app_{esc['id']}", type="primary", use_container_width=True):
-                    global_agent_pipeline.resolve_escalation_and_reprocess(
-                        escalation_id=esc["id"],
-                        resolution_type="APPROVED_SUGGESTION",
-                        resolved_value=esc["suggested_value"]
-                    )
-                    st.rerun()
-            with col_b:
-                override_input = st.text_input("Override value", value=str(esc["suggested_value"] or ""), key=f"in_{esc['id']}", label_visibility="collapsed")
-                if st.button("Apply Manual Override", key=f"btn_ovr_{esc['id']}", use_container_width=True):
-                    global_agent_pipeline.resolve_escalation_and_reprocess(
-                        escalation_id=esc["id"],
-                        resolution_type="MANUAL_OVERRIDE",
-                        resolved_value=override_input
-                    )
-                    st.rerun()
-            with col_c:
-                if st.button("✕ Reject", key=f"btn_rej_{esc['id']}", use_container_width=True):
-                    global_agent_pipeline.resolve_escalation_and_reprocess(
-                        escalation_id=esc["id"],
-                        resolution_type="REJECTED"
-                    )
-                    st.rerun()
-            st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
+                st.markdown(f"""
+                <div class="escalation-card" style="margin-bottom: 12px;">
+                  <div>
+                    <div class="esc-header">
+                      <span class="esc-tag {tag_class}">{esc['category'].replace('_', ' ')}</span>
+                      <span class="esc-meta">Confidence: {esc['confidence_score']*100:.0f}%</span>
+                    </div>
+                    <h3 class="esc-title">{esc['title']}</h3>
+                    <p class="esc-meta">{f"Source: {esc.get('source_file')}" if esc.get('source_file') else ''} &bull; Entity: <code>{esc.get('entity_id') or 'N/A'}</code></p>
+                    
+                    <div class="esc-context-box">
+                      <div class="esc-context-row">
+                        <span style="color: #64748b;">Target Field:</span>
+                        <strong>{esc.get('field') or 'N/A'}</strong>
+                      </div>
+                      <div class="esc-context-row">
+                        <span style="color: #64748b;">Current Raw Value:</span>
+                        <code style="color: #be123c;">{esc.get('current_value')}</code>
+                      </div>
+                      <div class="esc-context-row">
+                        <span style="color: #64748b;">Suggested Action:</span>
+                        <span style="color: #047857; font-weight: 600;">{esc.get('suggested_action')}</span>
+                      </div>
+                    </div>
+
+                    <div class="esc-reasoning">
+                      <strong>Agent Reasoning:</strong> {esc['agent_reasoning']}
+                    </div>
+                  </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                col_a, col_b, col_c = st.columns([1.5, 2.5, 1])
+                with col_a:
+                    if st.button("✓ Approve Suggestion", key=f"app_{esc['id']}", type="primary", use_container_width=True):
+                        global_agent_pipeline.resolve_escalation_and_reprocess(
+                            escalation_id=esc["id"],
+                            resolution_type="APPROVED_SUGGESTION",
+                            resolved_value=esc["suggested_value"]
+                        )
+                        st.rerun()
+                with col_b:
+                    override_input = st.text_input("Override value", value=str(esc["suggested_value"] or ""), key=f"in_{esc['id']}", label_visibility="collapsed")
+                    if st.button("Apply Manual Override", key=f"btn_ovr_{esc['id']}", use_container_width=True):
+                        global_agent_pipeline.resolve_escalation_and_reprocess(
+                            escalation_id=esc["id"],
+                            resolution_type="MANUAL_OVERRIDE",
+                            resolved_value=override_input
+                        )
+                        st.rerun()
+                with col_c:
+                    if st.button("✕ Reject", key=f"btn_rej_{esc['id']}", use_container_width=True):
+                        global_agent_pipeline.resolve_escalation_and_reprocess(
+                            escalation_id=esc["id"],
+                            resolution_type="REJECTED"
+                        )
+                        st.rerun()
+                st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
     # 2. DELTA SOLUTIONING
     elif insp_subtab == "Delta Solutioning":

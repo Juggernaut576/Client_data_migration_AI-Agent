@@ -9,7 +9,7 @@ st.set_page_config(
     page_title="Enterprise AI Data Migration & Integration Suite",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 from backend.core.schema import target_schema
@@ -34,68 +34,133 @@ if os.path.exists(CSS_PATH):
         custom_css = f.read()
     st.markdown(f"<style>{custom_css}</style>", unsafe_allow_html=True)
 
-# Additional Streamlit specific overrides to match identical theme
+# Custom overrides to ensure Streamlit native elements perfectly match the frontend design
 st.markdown("""
 <style>
-    .block-container { padding-top: 1.8rem; padding-bottom: 2rem; max-width: 1440px; }
-    header[data-testid="stHeader"] { background-color: #f8fafc; }
-    .stTabs [data-baseweb="tab-list"] { gap: 6px; border-bottom: 1px solid #e2e8f0; }
-    .stTabs [data-baseweb="tab"] { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.88rem; color: #64748b; padding: 10px 16px; }
+    /* Remove default Streamlit top padding and hide sidebar collapse arrow */
+    .block-container { padding-top: 1.5rem !important; padding-bottom: 2rem !important; max-width: 1440px !important; }
+    header[data-testid="stHeader"] { display: none !important; }
+    section[data-testid="stSidebar"] { display: none !important; }
+
+    /* Button styling to match exact frontend .btn classes */
+    div.stButton > button {
+        font-family: 'Inter', -apple-system, sans-serif !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        padding: 9px 16px !important;
+        border-radius: 10px !important;
+        cursor: pointer !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    div.stButton > button[kind="primary"] {
+        background: #4f46e5 !important;
+        color: #ffffff !important;
+        border-color: #4f46e5 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background: #4338ca !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+    }
+    div.stButton > button[kind="secondary"] {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+    }
+    div.stButton > button[kind="secondary"]:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    /* Download button styling */
+    div[data-testid="stDownloadButton"] > button {
+        font-family: 'Inter', -apple-system, sans-serif !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        padding: 9px 16px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] { gap: 6px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
+    .stTabs [data-baseweb="tab"] { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.88rem; color: #64748b; padding: 10px 16px; border-bottom: 2px solid transparent; }
     .stTabs [aria-selected="true"] { color: #4f46e5 !important; border-bottom-color: #4f46e5 !important; }
-    div[data-testid="stExpander"] { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); margin-bottom: 12px; }
+
+    /* DataFrame styling */
+    div[data-testid="stDataFrame"] { border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); }
 </style>
 """, unsafe_allow_html=True)
 
 # Fetch Current Pipeline Summary
 summary = global_agent_pipeline.get_summary()
 
-# RENDER IDENTICAL TOP HEADER
-st.markdown("""
-<div class="app-header" style="margin-bottom: 20px;">
-  <div class="brand">
-    <div class="brand-badge">
-      <span class="brand-dot"></span>
-      <span>ENTERPRISE FDE</span>
-    </div>
-    <div class="brand-title">
-      <div class="title-row">
-        <h1>AI Data Migration & Integration Suite</h1>
-        <span class="version-tag">v2.4 Production</span>
+# PREPARE DOWNLOAD DATA FOR TOP HEADER BUTTON
+valid_records = summary.get("valid_records_preview", [])
+if valid_records:
+    clean_df = pd.DataFrame([{k: v for k, v in r.items() if not k.startswith("_")} for r in valid_records])
+    csv_bytes = clean_df.to_csv(index=False).encode('utf-8')
+elif os.path.exists(os.path.join(BASE_DIR, "data", "migrated_output", "cleaned_target_employees.csv")):
+    with open(os.path.join(BASE_DIR, "data", "migrated_output", "cleaned_target_employees.csv"), "rb") as f:
+        csv_bytes = f.read()
+else:
+    csv_bytes = b"employee_id,first_name,last_name,email,department,job_title,hire_date,salary,status,phone_number\n"
+
+# TOP HEADER WITH IDENTICAL ACTIONS
+head_col1, head_col2 = st.columns([1.8, 1.2])
+
+with head_col1:
+    st.markdown("""
+    <div class="brand" style="margin-bottom: 8px;">
+      <div class="brand-badge">
+        <span class="brand-dot"></span>
+        <span>ENTERPRISE FDE</span>
       </div>
-      <p class="subtitle">Autonomous Multi-Source Reconciliation &bull; Defensible Escalation Boundary &bull; Human-in-the-Loop Supervision</p>
+      <div class="brand-title">
+        <div class="title-row">
+          <h1>AI Data Migration & Integration Suite</h1>
+          <span class="version-tag">v2.4 Production</span>
+        </div>
+        <p class="subtitle">Autonomous Multi-Source Reconciliation &bull; Defensible Escalation Boundary &bull; Human-in-the-Loop Supervision</p>
+      </div>
     </div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# SIDEBAR CONTROLS
-with st.sidebar:
-    st.markdown("### Migration Controls")
-    st.info("Ingest client raw files (CSV & Excel) and run autonomous mapping & cleaning pipeline.")
-    
-    if st.button("🚀 Run Pipeline (3 Files)", use_container_width=True, type="primary"):
-        sample_files = glob.glob(os.path.join(DATA_DIR, "*.*"))
-        file_inputs = [{"path": p} for p in sample_files if p.endswith((".csv", ".xlsx", ".xls"))]
-        with st.spinner("Processing files through autonomous pipeline..."):
-            global_agent_pipeline.run_pipeline(file_inputs)
-        st.success("Ingestion & reconciliation complete!")
-        st.rerun()
+with head_col2:
+    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+    act_col1, act_col2, act_col3 = st.columns([1.2, 1.1, 0.8])
+    with act_col1:
+        if st.button("▶ Run Pipeline (3 Files)", type="primary", use_container_width=True):
+            sample_files = glob.glob(os.path.join(DATA_DIR, "*.*"))
+            file_inputs = [{"path": p} for p in sample_files if p.endswith((".csv", ".xlsx", ".xls"))]
+            with st.spinner("Processing files through autonomous pipeline..."):
+                global_agent_pipeline.run_pipeline(file_inputs)
+            st.rerun()
+    with act_col2:
+        st.download_button(
+            label="📥 Download Cleaned CSV",
+            data=csv_bytes,
+            file_name="cleaned_target_employees.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+    with act_col3:
+        if st.button("🔄 Reset", use_container_width=True):
+            global_pipeline_state.reset()
+            global_mock_target.reset_to_seed()
+            st.rerun()
 
-    st.markdown("---")
-    uploaded_files = st.file_uploader("Upload Client Exports (.csv, .xlsx)", accept_multiple_files=True)
-    if uploaded_files and st.button("Ingest Uploaded Files", use_container_width=True):
-        file_inputs = [{"filename": f.name, "content": f.read()} for f in uploaded_files]
-        with st.spinner("Processing custom uploads..."):
-            global_agent_pipeline.run_pipeline(file_inputs)
-        st.success("Uploaded files processed!")
-        st.rerun()
-
-    st.markdown("---")
-    if st.button("🔄 Reset Target State", use_container_width=True):
-        global_pipeline_state.reset()
-        global_mock_target.reset_to_seed()
-        st.info("State reset to initial seed.")
-        st.rerun()
+st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # RENDER IDENTICAL KPI SUMMARY CARDS
 st.markdown(f"""
@@ -201,12 +266,12 @@ st.markdown("""
 
 # TABS
 tab_esc, tab_delta, tab_map, tab_data, tab_target, tab_audit = st.tabs([
-    f"⚠️ Escalation Queue ({summary['pending_escalations_count']})",
-    f"🔄 Delta Solutioning ({len(summary['deltas'])})",
-    "🗺️ Schema Mappings",
-    f"📋 Ready Target Dataset ({summary['valid_count']})",
-    "🎯 Target API & Rollback",
-    "📜 Audit Trail"
+    f"Escalation Queue ({summary['pending_escalations_count']})",
+    f"Delta Solutioning ({len(summary['deltas'])})",
+    "Autonomous Mappings",
+    f"Ready Target Dataset ({summary['valid_count']})",
+    "Target API & Rollback",
+    "Audit Trail"
 ])
 
 # 1. ESCALATION QUEUE (HITL)
@@ -238,7 +303,7 @@ with tab_esc:
             elif esc["category"] == "VALIDATION_FAILURE": tag_class = "tag-validation"
 
             st.markdown(f"""
-            <div class="escalation-card" style="margin-bottom: 16px;">
+            <div class="escalation-card" style="margin-bottom: 12px;">
               <div>
                 <div class="esc-header">
                   <span class="esc-tag {tag_class}">{esc['category'].replace('_', ' ')}</span>
@@ -269,9 +334,9 @@ with tab_esc:
             </div>
             """, unsafe_allow_html=True)
 
-            col_a, col_b, col_c = st.columns([1.5, 2, 1])
+            col_a, col_b, col_c = st.columns([1.5, 2.5, 1])
             with col_a:
-                if st.button("✓ Approve Suggestion", key=f"app_{esc['id']}", type="primary"):
+                if st.button("✓ Approve Suggestion", key=f"app_{esc['id']}", type="primary", use_container_width=True):
                     global_agent_pipeline.resolve_escalation_and_reprocess(
                         escalation_id=esc["id"],
                         resolution_type="APPROVED_SUGGESTION",
@@ -280,7 +345,7 @@ with tab_esc:
                     st.rerun()
             with col_b:
                 override_input = st.text_input("Override value", value=str(esc["suggested_value"] or ""), key=f"in_{esc['id']}", label_visibility="collapsed")
-                if st.button("Apply Manual Override", key=f"btn_ovr_{esc['id']}"):
+                if st.button("Apply Manual Override", key=f"btn_ovr_{esc['id']}", use_container_width=True):
                     global_agent_pipeline.resolve_escalation_and_reprocess(
                         escalation_id=esc["id"],
                         resolution_type="MANUAL_OVERRIDE",
@@ -288,13 +353,13 @@ with tab_esc:
                     )
                     st.rerun()
             with col_c:
-                if st.button("✕ Reject Record", key=f"btn_rej_{esc['id']}"):
+                if st.button("✕ Reject", key=f"btn_rej_{esc['id']}", use_container_width=True):
                     global_agent_pipeline.resolve_escalation_and_reprocess(
                         escalation_id=esc["id"],
                         resolution_type="REJECTED"
                     )
                     st.rerun()
-            st.markdown("<hr style='margin: 12px 0 20px 0; border: none; border-bottom: 1px solid #e2e8f0;'>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
 # 2. DELTA SOLUTIONING
 with tab_delta:
@@ -369,19 +434,8 @@ with tab_data:
     </div>
     """, unsafe_allow_html=True)
 
-    valid_records = summary.get("valid_records_preview", [])
     if valid_records:
-        clean_df = pd.DataFrame([{k: v for k, v in r.items() if not k.startswith("_")} for r in valid_records])
         st.dataframe(clean_df, use_container_width=True)
-
-        csv_bytes = clean_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Download Cleaned CSV",
-            data=csv_bytes,
-            file_name="cleaned_target_employees.csv",
-            mime="text/csv",
-            type="primary"
-        )
     else:
         st.info("No validated records loaded yet. Run the pipeline above.")
 

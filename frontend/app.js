@@ -82,23 +82,29 @@ async function fetchStatus() {
   }
 }
 
+// Safe DOM helper
+function setElText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
 // 4. RENDER DASHBOARD
 function renderDashboard(data) {
   if (!data) return;
 
   // KPI updates
-  document.getElementById('kpi-raw').textContent = data.raw_records_count || 0;
-  document.getElementById('kpi-sources').textContent = `${(data.sources || []).length} source files ingested`;
-  document.getElementById('kpi-cleaned').textContent = data.cleaned_count || 0;
-  document.getElementById('kpi-escalations').textContent = data.pending_escalations_count || 0;
-  document.getElementById('kpi-valid').textContent = data.valid_count || 0;
-  document.getElementById('kpi-target-db').textContent = (data.target_database_preview || []).length;
+  setElText('kpi-raw', data.raw_records_count || 0);
+  setElText('kpi-sources', `${(data.sources || []).length} source files loaded`);
+  setElText('kpi-cleaned', data.cleaned_count || 0);
+  setElText('kpi-escalations', data.pending_escalations_count || 0);
+  setElText('kpi-valid', data.valid_count || 0);
+  setElText('kpi-target-db', (data.target_database_preview || []).length);
 
   // Badges
-  document.getElementById('badge-escalation-count').textContent = data.pending_escalations_count || 0;
-  document.getElementById('badge-delta-count').textContent = (data.deltas || []).length;
-  document.getElementById('badge-ready-count').textContent = data.valid_count || 0;
-  document.getElementById('count-all-esc').textContent = data.pending_escalations_count || 0;
+  setElText('badge-escalation-count', data.pending_escalations_count || 0);
+  setElText('badge-delta-count', (data.deltas || []).length);
+  setElText('badge-ready-count', data.valid_count || 0);
+  setElText('count-all-esc', data.pending_escalations_count || 0);
 
   // Render sub-views
   renderEscalations(data.pending_escalations || []);
@@ -232,10 +238,10 @@ window.openManualEdit = function(id, fieldName, defaultValue) {
 
 // 8. RENDER DELTAS
 function renderDeltas(deltas, summary) {
-  document.getElementById('tally-new').textContent = summary.new || 0;
-  document.getElementById('tally-update').textContent = summary.update || 0;
-  document.getElementById('tally-noop').textContent = summary.no_change || 0;
-  document.getElementById('tally-conflict').textContent = summary.conflict || 0;
+  setElText('tally-new', summary.new || 0);
+  setElText('tally-update', summary.update || 0);
+  setElText('tally-noop', summary.no_change || 0);
+  setElText('tally-conflict', summary.conflict || 0);
 
   const tbody = document.getElementById('delta-table-body');
   if (!deltas || deltas.length === 0) {
@@ -360,7 +366,7 @@ function renderAuditTrail(entries) {
 
 // 12. RENDER TARGET DB & PUSH
 function renderTargetDatabase(dbRecords) {
-  document.getElementById('target-db-count').textContent = dbRecords.length;
+  setElText('target-db-count', dbRecords.length);
   const tbody = document.getElementById('target-db-table-body');
   if (!dbRecords || dbRecords.length === 0) {
     tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Target database is empty.</td></tr>`;

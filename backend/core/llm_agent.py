@@ -23,11 +23,25 @@ class LLMAgentReasoner:
             load_dotenv(override=False)
         except Exception:
             pass
+        # Check Streamlit Cloud secrets if available
+        st_key = None
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets"):
+                st_key = (
+                    st.secrets.get("GROQ_API_KEY")
+                    or st.secrets.get("GEMINI_API_KEY")
+                    or st.secrets.get("OPENAI_API_KEY")
+                )
+        except Exception:
+            pass
+
         return (
             self._custom_api_key
             or os.getenv("GROQ_API_KEY")
             or os.getenv("GEMINI_API_KEY")
             or os.getenv("OPENAI_API_KEY")
+            or st_key
         )
 
     @property

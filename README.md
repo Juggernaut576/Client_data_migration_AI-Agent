@@ -110,6 +110,11 @@ Open your browser and navigate to:
 http://127.0.0.1:8000/
 ```
 
+Alternatively, you can run the Streamlit UI dashboard:
+```bash
+streamlit run streamlit_app.py
+```
+
 ---
 
 ## 🧪 Automated Testing

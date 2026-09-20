@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from backend.core.schema import target_schema
 from backend.core.pipeline import global_agent_pipeline, global_pipeline_state
 from backend.core.mock_target import global_mock_target
+from backend.core.llm_agent import global_llm_reasoner
 
 app = FastAPI(
     title="AI Data Migration & Integration Agent",
@@ -38,6 +39,23 @@ class EscalationResolveRequest(BaseModel):
 
 class RollbackRequest(BaseModel):
     transaction_id: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: Optional[List[dict]] = []
+
+@app.post("/api/chat")
+def chat_with_agent(req: ChatRequest):
+    """
+    Interactive conversation endpoint with the Migration AI Agent.
+    """
+    state_dump = global_agent_pipeline.get_summary()
+    res = global_llm_reasoner.chat(
+        user_message=req.message,
+        history=req.history or [],
+        state=state_dump
+    )
+    return res
 
 @app.get("/api/schema")
 def get_schema():

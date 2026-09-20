@@ -147,7 +147,11 @@
 
     <!-- TABS BAR -->
     <nav class="tab-nav">
-      <button class="tab-btn active" data-tab="tab-escalations">
+      <button class="tab-btn active" data-tab="tab-chat" style="font-weight: 700; color: #4f46e5; border-bottom-color: #4f46e5;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        💬 AI Copilot Chat <span class="badge" style="background: #4f46e5; color: white;">Active</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-escalations">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
         Escalation Queue <span class="badge badge-amber" id="badge-escalation-count">0</span>
       </button>
@@ -171,16 +175,12 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg>
         Target API & Rollback
       </button>
-      <button class="tab-btn" data-tab="tab-chat">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-        AI Copilot Chat <span class="badge" style="background: #8b5cf6; color: white;">Chat</span>
-      </button>
     </nav>
 
     <!-- CONTENT PANES -->
     <main class="main-content">
       <!-- 1. ESCALATION QUEUE (HITL) -->
-      <div class="tab-pane active" id="tab-escalations">
+      <div class="tab-pane" id="tab-escalations">
         <div class="pane-header">
           <div>
             <h2>Human-in-the-Loop Escalation Queue</h2>
@@ -334,29 +334,18 @@
       </div>
 
       <!-- 7. AI COPILOT CHAT PANE -->
-      <div class="tab-pane" id="tab-chat">
+      <div class="tab-pane active" id="tab-chat">
         <div class="pane-header">
           <div>
             <h2>Autonomous Migration AI Copilot</h2>
             <p class="pane-desc">
-              Converse with the Migration AI Agent in real time. Ask about escalations, data deltas, normalization decisions, or ask for guidance on resolving ambiguous records.
+              Ask questions and chat directly with the Migration AI Agent in real time. Ask about escalations, data deltas, normalization rules, or how to resolve edge cases.
             </p>
           </div>
           <div class="chat-status-indicator">
             <span class="live-status-dot"></span>
             <span id="chat-agent-status-text">Agent Online &bull; Context Aware</span>
           </div>
-        </div>
-
-        <!-- QUICK PROMPT CHIPS -->
-        <div class="chat-prompt-chips">
-          <span class="prompt-chip-label">Quick Prompts:</span>
-          <button class="prompt-chip" data-query="Why was EMP-1003 Carlos Mendez escalated?">Why was EMP-1003 escalated?</button>
-          <button class="prompt-chip" data-query="Explain the data conflict on EMP-1006 Fiona Gallagher">Explain EMP-1006 conflict</button>
-          <button class="prompt-chip" data-query="Why did EMP-1008 Hannah Abbott fail validation?">Why did EMP-1008 fail?</button>
-          <button class="prompt-chip" data-query="Show me the Delta Solutioning summary">Show Delta Summary</button>
-          <button class="prompt-chip" data-query="What cleaning steps were performed autonomously?">What was cleaned?</button>
-          <button class="prompt-chip" data-query="Is it safe to push to the target platform now?">Can I push to target?</button>
         </div>
 
         <!-- CHAT STREAM CONTAINER -->
@@ -367,9 +356,9 @@
               <div class="chat-bubble">
                 <div class="chat-sender">Migration AI Agent <span class="chat-time">Live Session</span></div>
                 <div class="chat-body">
-                  Hello! I am your Autonomous Data Migration AI Agent. I monitor file ingestion, autonomous schema mapping, data normalization, escalation detection, and target synchronizations.
+                  Hello! I am your Autonomous Data Migration AI Agent. I have full real-time awareness of the client migration pipeline, schema mappings, duplicate records, validation errors, and delta changes.
                   <br><br>
-                  How can I assist you with this client migration today? You can ask me why specific records were escalated, request delta summaries, or click any of the quick prompts above.
+                  What questions do you have about this migration? Just type below and ask me anything!
                 </div>
               </div>
             </div>
@@ -377,7 +366,7 @@
 
           <!-- CHAT INPUT BAR -->
           <div class="chat-input-bar">
-            <input type="text" id="chat-input" class="chat-input-field" placeholder="Ask the agent anything about this migration (e.g. 'Why was EMP-1003 escalated?')..." autocomplete="off" />
+            <input type="text" id="chat-input" class="chat-input-field" placeholder="Type your question here and press Enter (e.g. 'Why was EMP-1003 Carlos Mendez escalated?')..." autocomplete="off" />
             <button id="chat-btn-send" class="btn btn-primary chat-btn-send">
               <span>Send</span>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>

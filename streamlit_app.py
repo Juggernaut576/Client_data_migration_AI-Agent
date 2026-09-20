@@ -324,52 +324,29 @@ with tab_chat:
             }
         ]
 
-    # Quick prompt buttons
-    st.markdown("**Quick Prompts:**")
-    qp_col1, qp_col2, qp_col3 = st.columns(3)
-    quick_query = None
-    with qp_col1:
-        if st.button("❓ Why was EMP-1003 escalated?", key="qp1", use_container_width=True):
-            quick_query = "Why was EMP-1003 Carlos Mendez escalated?"
-        if st.button("📊 Show Delta Summary", key="qp2", use_container_width=True):
-            quick_query = "Show me the Delta Solutioning summary"
-    with qp_col2:
-        if st.button("⚡ Explain EMP-1006 Conflict", key="qp3", use_container_width=True):
-            quick_query = "Explain the data conflict on EMP-1006 Fiona Gallagher"
-        if st.button("🧹 What was cleaned?", key="qp4", use_container_width=True):
-            quick_query = "What cleaning steps were performed autonomously?"
-    with qp_col3:
-        if st.button("⚠️ Why did EMP-1008 fail?", key="qp5", use_container_width=True):
-            quick_query = "Why did EMP-1008 Hannah Abbott fail validation?"
-        if st.button("🚀 Can I push to target?", key="qp6", use_container_width=True):
-            quick_query = "Is it safe to push to the target platform now?"
-
     # Display chat messages
     for msg in st.session_state["chat_history"]:
         with st.chat_message(msg["role"], avatar="🤖" if msg["role"] == "assistant" else "👤"):
             st.markdown(msg["content"])
 
     # Chat input
-    user_input = st.chat_input("Ask the agent anything about this migration...")
-    active_prompt = quick_query or user_input
+    user_input = st.chat_input("Type your question here and press Enter (e.g. 'Why was EMP-1003 escalated?')...")
 
-    if active_prompt:
-        st.session_state["chat_history"].append({"role": "user", "content": active_prompt})
+    if user_input:
+        st.session_state["chat_history"].append({"role": "user", "content": user_input})
         with st.chat_message("user", avatar="👤"):
-            st.markdown(active_prompt)
+            st.markdown(user_input)
 
         with st.chat_message("assistant", avatar="🤖"):
-            with st.spinner("Agent analyzing migration context..."):
+            with st.spinner("Agent thinking..."):
                 response = global_llm_reasoner.chat(
-                    user_message=active_prompt,
+                    user_message=user_input,
                     history=st.session_state["chat_history"][-6:],
                     state=summary
                 )
                 reply = response.get("reply", "I processed your request.")
                 st.markdown(reply)
                 st.session_state["chat_history"].append({"role": "assistant", "content": reply})
-        if quick_query:
-            st.rerun()
 
 # 1. ESCALATION QUEUE (HITL)
 with tab_esc:

@@ -329,142 +329,110 @@ with st.expander("📂 Upload Custom Client Exports (.csv, .xlsx, .xls)", expand
         else:
             st.caption("Select one or more .csv / .xlsx files from your computer to run the agent.")
 
-# PERSISTENT NAVIGATION (Remembers active tab across approvals and reruns)
-NAV_KEYS = [
-    "escalations",
-    "chat",
-    "deltas",
-    "mappings",
-    "dataset",
-    "target",
-    "audit"
-]
+# AI COPILOT CHAT (Primary Unified Interface)
+st.markdown("""
+<div class="pane-header">
+  <div>
+    <h2>Autonomous Migration AI Copilot</h2>
+    <p class="pane-desc">
+      Converse with the Migration AI Agent in real time. Ask why specific records were escalated, inspect deltas, or query autonomous mapping decisions.
+    </p>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-NAV_LABELS = {
-    "escalations": f"⚠️ Escalation Queue ({summary['pending_escalations_count']})",
-    "chat": "💬 AI Copilot Chat",
-    "deltas": f"📊 Delta Solutioning ({len(summary['deltas'])})",
-    "mappings": "🗺️ Autonomous Mappings",
-    "dataset": f"👥 Ready Target Dataset ({summary['valid_count']})",
-    "target": "🚀 Target API & Rollback",
-    "audit": "📜 Audit Trail"
-}
+# Initialize chat history in session state
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = [
+        {
+            "role": "assistant",
+            "content": (
+                "👋 **Hello! I am your Autonomous Data Migration AI Agent.**\n\n"
+                "You can operate and control the **entire migration lifecycle** directly from this chat:\n\n"
+                "- 🚀 **`Run pipeline`** — Ingest and reconcile the client source files.\n"
+                "- ⚠️ **`Show escalations`** — Inspect open queue items requiring review.\n"
+                "- ✅ **`Approve all`** — Approve all recommended resolutions at once.\n"
+                "- 👤 **`Approve Carlos Mendez`** or **`Approve ESC-...`** — Resolve a specific record.\n"
+                "- ✏️ **`Set Carlos salary to 105000`** / **`Set Hannah date to 2024-03-15`** — Manual override.\n"
+                "- 📊 **`Show deltas`** — Preview attribute-level diffs against target.\n"
+                "- 🚀 **`Push to target`** — Commit validated records to Darwinbox.\n"
+                "- ↩️ **`Rollback`** — Revert target platform synchronization.\n"
+                "- 🔄 **`Reset`** — Reset pipeline and mock target to seed.\n\n"
+                "What would you like to do?"
+            )
+        }
+    ]
 
-if "active_nav_tab" not in st.session_state:
-    st.session_state["active_nav_tab"] = "escalations"
+# Display chat messages
+for msg in st.session_state["chat_history"]:
+    with st.chat_message(msg["role"], avatar="🤖" if msg["role"] == "assistant" else "👤"):
+        st.markdown(msg["content"])
 
-active_tab = st.radio(
-    "Navigation",
-    options=NAV_KEYS,
-    format_func=lambda k: NAV_LABELS.get(k, k),
-    horizontal=True,
-    key="active_nav_tab",
-    label_visibility="collapsed"
-)
+def auto_scroll_to_chat():
+    components.html(
+        """
+        <script>
+        function doScroll() {
+            try {
+                const chatInput = window.parent.document.querySelector('div[data-testid="stChatInput"]')
+                    || window.parent.document.querySelector('.stChatInput');
+                if (chatInput) {
+                    chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    return;
+                }
+                const main = window.parent.document.querySelector('.main')
+                    || window.parent.document.querySelector('section.main')
+                    || window.parent.document.documentElement
+                    || window.parent.document.body;
+                if (main) {
+                    main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' });
+                }
+            } catch (e) {}
+        }
+        doScroll();
+        setTimeout(doScroll, 80);
+        setTimeout(doScroll, 250);
+        setTimeout(doScroll, 500);
+        </script>
+        """,
+        height=0,
+        width=0
+    )
 
-# 0. AI COPILOT CHAT
-if active_tab == "chat":
-    st.markdown("""
-    <div class="pane-header">
-      <div>
-        <h2>Autonomous Migration AI Copilot</h2>
-        <p class="pane-desc">
-          Converse with the Migration AI Agent in real time. Ask why specific records were escalated, inspect deltas, or query autonomous mapping decisions.
-        </p>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+# Chat input
+user_input = st.chat_input("Ask a question or enter a command (e.g. 'Run pipeline', 'Approve all', 'Push to target')...")
 
-    # Initialize chat history in session state
-    if "chat_history" not in st.session_state:
-        st.session_state["chat_history"] = [
-            {
-                "role": "assistant",
-                "content": (
-                    "👋 **Hello! I am your Autonomous Data Migration AI Agent.**\n\n"
-                    "You can operate and control the **entire migration lifecycle** directly from this chat:\n\n"
-                    "- 🚀 **`Run pipeline`** — Ingest and reconcile the client source files.\n"
-                    "- ⚠️ **`Show escalations`** — Inspect open queue items requiring review.\n"
-                    "- ✅ **`Approve all`** — Approve all recommended resolutions at once.\n"
-                    "- 👤 **`Approve Carlos Mendez`** or **`Approve ESC-...`** — Resolve a specific record.\n"
-                    "- ✏️ **`Set Carlos salary to 105000`** / **`Set Hannah date to 2024-03-15`** — Manual override.\n"
-                    "- 📊 **`Show deltas`** — Preview attribute-level diffs against target.\n"
-                    "- 🚀 **`Push to target`** — Commit validated records to Darwinbox.\n"
-                    "- ↩️ **`Rollback`** — Revert target platform synchronization.\n"
-                    "- 🔄 **`Reset`** — Reset pipeline and mock target to seed.\n\n"
-                    "What would you like to do?"
-                )
-            }
-        ]
+if user_input:
+    st.session_state["chat_history"].append({"role": "user", "content": user_input})
+    with st.chat_message("user", avatar="👤"):
+        st.markdown(user_input)
 
-    # Display chat messages
-    for msg in st.session_state["chat_history"]:
-        with st.chat_message(msg["role"], avatar="🤖" if msg["role"] == "assistant" else "👤"):
-            st.markdown(msg["content"])
+    auto_scroll_to_chat()
 
-    def auto_scroll_to_chat():
-        components.html(
-            """
-            <script>
-            function doScroll() {
-                try {
-                    const chatInput = window.parent.document.querySelector('div[data-testid="stChatInput"]')
-                        || window.parent.document.querySelector('.stChatInput');
-                    if (chatInput) {
-                        chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                        return;
-                    }
-                    const main = window.parent.document.querySelector('.main')
-                        || window.parent.document.querySelector('section.main')
-                        || window.parent.document.documentElement
-                        || window.parent.document.body;
-                    if (main) {
-                        main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' });
-                    }
-                } catch (e) {}
-            }
-            doScroll();
-            setTimeout(doScroll, 80);
-            setTimeout(doScroll, 250);
-            setTimeout(doScroll, 500);
-            </script>
-            """,
-            height=0,
-            width=0
-        )
+    with st.chat_message("assistant", avatar="🤖"):
+        with st.spinner("Agent executing..."):
+            auto_scroll_to_chat()
+            response = global_llm_reasoner.chat(
+                user_message=user_input,
+                history=st.session_state["chat_history"][-6:],
+                state=summary,
+                pipeline=global_agent_pipeline
+            )
+            reply = response.get("reply", "I processed your request.")
+            st.markdown(reply)
+            st.session_state["chat_history"].append({"role": "assistant", "content": reply})
+            auto_scroll_to_chat()
+            if response.get("action_taken"):
+                st.rerun()
 
-    # Chat input
-    user_input = st.chat_input("Ask a question or enter a command (e.g. 'Run pipeline', 'Approve all', 'Push to target')...")
+# Automatically ensure chat bottom is in view
+if len(st.session_state["chat_history"]) > 1:
+    auto_scroll_to_chat()
 
-    if user_input:
-        st.session_state["chat_history"].append({"role": "user", "content": user_input})
-        with st.chat_message("user", avatar="👤"):
-            st.markdown(user_input)
-
-        auto_scroll_to_chat()
-
-        with st.chat_message("assistant", avatar="🤖"):
-            with st.spinner("Agent executing..."):
-                auto_scroll_to_chat()
-                response = global_llm_reasoner.chat(
-                    user_message=user_input,
-                    history=st.session_state["chat_history"][-6:],
-                    state=summary,
-                    pipeline=global_agent_pipeline
-                )
-                reply = response.get("reply", "I processed your request.")
-                st.markdown(reply)
-                st.session_state["chat_history"].append({"role": "assistant", "content": reply})
-                auto_scroll_to_chat()
-                if response.get("action_taken"):
-                    st.rerun()
-
-    # Automatically ensure chat bottom is in view
-    if len(st.session_state["chat_history"]) > 1:
-        auto_scroll_to_chat()
-
-# 1. ESCALATION QUEUE (HITL)
-elif active_tab == "escalations":
+# OPTIONAL ENTERPRISE DATA INSPECTOR (Collapsed expander for non-chat review)
+with st.expander("🔍 Raw Data Inspector & Audit Logs (Optional)", expanded=False):
+    insp_subtab = st.selectbox("Select View", ["Escalations Queue", "Delta Solutioning", "Autonomous Mappings", "Target Dataset", "Target Sync & Rollback", "Audit Trail"])
+    if insp_subtab == "Escalations Queue":
     st.markdown("""
     <div class="pane-header">
       <div>
@@ -550,131 +518,131 @@ elif active_tab == "escalations":
                     st.rerun()
             st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
-# 2. DELTA SOLUTIONING
-elif active_tab == "deltas":
-    tally = summary["delta_summary"]
-    st.markdown(f"""
-    <div class="pane-header">
-      <div>
-        <h2>Delta Solutioning Engine</h2>
-        <p class="pane-desc">Diffs normalized records against destination target platform state to prevent redundant updates prior to commit.</p>
-      </div>
-      <div class="delta-tally">
-        <span class="pill pill-green">New: <strong>{tally.get('new', 0)}</strong></span>
-        <span class="pill pill-blue">Updates: <strong>{tally.get('update', 0)}</strong></span>
-        <span class="pill pill-gray">No Change: <strong>{tally.get('no_change', 0)}</strong></span>
-        <span class="pill pill-red">Conflicts: <strong>{tally.get('conflict', 0)}</strong></span>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # 2. DELTA SOLUTIONING
+    elif insp_subtab == "Delta Solutioning":
+        tally = summary["delta_summary"]
+        st.markdown(f"""
+        <div class="pane-header">
+          <div>
+            <h2>Delta Solutioning Engine</h2>
+            <p class="pane-desc">Diffs normalized records against destination target platform state to prevent redundant updates prior to commit.</p>
+          </div>
+          <div class="delta-tally">
+            <span class="pill pill-green">New: <strong>{tally.get('new', 0)}</strong></span>
+            <span class="pill pill-blue">Updates: <strong>{tally.get('update', 0)}</strong></span>
+            <span class="pill pill-gray">No Change: <strong>{tally.get('no_change', 0)}</strong></span>
+            <span class="pill pill-red">Conflicts: <strong>{tally.get('conflict', 0)}</strong></span>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    deltas = summary["deltas"]
-    if deltas:
-        delta_rows = []
-        for d in deltas:
-            inc = d.get("incoming_data", {})
-            diff_text = "; ".join([f"{k}: {v.get('before')} -> {v.get('after')}" for k, v in d.get("field_diffs", {}).items()]) or "Identical"
-            delta_rows.append({
-                "Entity ID": d.get("entity_id"),
-                "Delta Operation": d.get("delta_type"),
-                "Employee Name": f"{inc.get('first_name', '')} {inc.get('last_name', '')}",
-                "Department": inc.get("department", "-"),
-                "Field Level Diffs": diff_text
-            })
-        st.dataframe(pd.DataFrame(delta_rows), use_container_width=True)
-    else:
-        st.info("Run the ingestion pipeline to view delta analysis.")
-
-# 3. SCHEMA MAPPINGS
-elif active_tab == "mappings":
-    st.markdown("""
-    <div class="pane-header">
-      <div>
-        <h2>Autonomous Schema Field Mappings</h2>
-        <p class="pane-desc">Source-to-target field associations proposed via semantic similarity, synonym matching, and statistical data profiling.</p>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    mappings_by_file = summary.get("column_mappings", {})
-    if mappings_by_file:
-        for fname, maps in mappings_by_file.items():
-            st.markdown(f"#### Source File: `{fname}`")
-            rows = []
-            for col, m in maps.items():
-                rows.append({
-                    "Source Header": col,
-                    "Target Field": m.get("target_field"),
-                    "Confidence": f"{m.get('confidence', 0)*100:.0f}%",
-                    "Rationale": m.get("reasoning")
+        deltas = summary["deltas"]
+        if deltas:
+            delta_rows = []
+            for d in deltas:
+                inc = d.get("incoming_data", {})
+                diff_text = "; ".join([f"{k}: {v.get('before')} -> {v.get('after')}" for k, v in d.get("field_diffs", {}).items()]) or "Identical"
+                delta_rows.append({
+                    "Entity ID": d.get("entity_id"),
+                    "Delta Operation": d.get("delta_type"),
+                    "Employee Name": f"{inc.get('first_name', '')} {inc.get('last_name', '')}",
+                    "Department": inc.get("department", "-"),
+                    "Field Level Diffs": diff_text
                 })
-            st.dataframe(pd.DataFrame(rows), use_container_width=True)
-    else:
-        st.info("Run the ingestion pipeline to view schema mappings.")
+            st.dataframe(pd.DataFrame(delta_rows), use_container_width=True)
+        else:
+            st.info("Run the ingestion pipeline to view delta analysis.")
 
-# 4. READY TARGET DATASET
-elif active_tab == "dataset":
-    st.markdown("""
-    <div class="pane-header">
-      <div>
-        <h2>Target Entity Dataset (Cleaned & Validated)</h2>
-        <p class="pane-desc">Consolidated entities conforming to target specification ready for destination synchronization.</p>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # 3. SCHEMA MAPPINGS
+    elif insp_subtab == "Autonomous Mappings":
+        st.markdown("""
+        <div class="pane-header">
+          <div>
+            <h2>Autonomous Schema Field Mappings</h2>
+            <p class="pane-desc">Source-to-target field associations proposed via semantic similarity, synonym matching, and statistical data profiling.</p>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    if valid_records:
-        st.dataframe(clean_df, use_container_width=True)
-    else:
-        st.info("No validated records loaded yet. Run the pipeline above.")
+        mappings_by_file = summary.get("column_mappings", {})
+        if mappings_by_file:
+            for fname, maps in mappings_by_file.items():
+                st.markdown(f"#### Source File: `{fname}`")
+                rows = []
+                for col, m in maps.items():
+                    rows.append({
+                        "Source Header": col,
+                        "Target Field": m.get("target_field"),
+                        "Confidence": f"{m.get('confidence', 0)*100:.0f}%",
+                        "Rationale": m.get("reasoning")
+                    })
+                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+        else:
+            st.info("Run the ingestion pipeline to view schema mappings.")
 
-# 5. TARGET API & ROLLBACK
-elif active_tab == "target":
-    st.markdown("""
-    <div class="pane-header">
-      <div>
-        <h2>Target Enterprise Platform Integration</h2>
-        <p class="pane-desc">Execute the batch commit step to the destination REST API, monitor record-level responses, or perform transactional rollback.</p>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # 4. READY TARGET DATASET
+    elif insp_subtab == "Target Dataset":
+        st.markdown("""
+        <div class="pane-header">
+          <div>
+            <h2>Target Entity Dataset (Cleaned & Validated)</h2>
+            <p class="pane-desc">Consolidated entities conforming to target specification ready for destination synchronization.</p>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    c_btn, c_res = st.columns([1, 2])
-    with c_btn:
-        if st.button("🚀 Synchronize to Target Platform", type="primary", use_container_width=True):
-            res = global_agent_pipeline.push_to_target()
-            st.success(f"Push committed! Transaction ID: {res['transaction_id']}")
-            st.rerun()
+        if valid_records:
+            st.dataframe(clean_df, use_container_width=True)
+        else:
+            st.info("No validated records loaded yet. Run the pipeline above.")
 
-    push_res = summary.get("push_result")
-    if push_res:
-        st.markdown(f"**Last Transaction:** `{push_res.get('transaction_id')}` | **Success:** `{push_res.get('success_count')}` | **Failed:** `{push_res.get('failed_count')}`")
-        if st.button("↩️ Rollback Last Transaction"):
-            rb_res = global_agent_pipeline.rollback_push(push_res["transaction_id"])
-            st.warning(f"Rollback status: {rb_res.get('status')}. Reverted {rb_res.get('reverted_records_count')} records.")
-            st.rerun()
+    # 5. TARGET API & ROLLBACK
+    elif insp_subtab == "Target Sync & Rollback":
+        st.markdown("""
+        <div class="pane-header">
+          <div>
+            <h2>Target Enterprise Platform Integration</h2>
+            <p class="pane-desc">Execute the batch commit step to the destination REST API, monitor record-level responses, or perform transactional rollback.</p>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("#### Live Destination Database State")
-    db_data = summary.get("target_database_preview", [])
-    if db_data:
-        st.dataframe(pd.DataFrame(db_data), use_container_width=True)
-    else:
-        st.info("Target database is empty.")
+        c_btn, c_res = st.columns([1, 2])
+        with c_btn:
+            if st.button("🚀 Synchronize to Target Platform", type="primary", use_container_width=True):
+                res = global_agent_pipeline.push_to_target()
+                st.success(f"Push committed! Transaction ID: {res['transaction_id']}")
+                st.rerun()
 
-# 6. AUDIT TRAIL
-elif active_tab == "audit":
-    st.markdown("""
-    <div class="pane-header">
-      <div>
-        <h2>Transformation Audit Trail</h2>
-        <p class="pane-desc">Immutable verification log tracking every autonomous modification, merge, and consultant intervention.</p>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+        push_res = summary.get("push_result")
+        if push_res:
+            st.markdown(f"**Last Transaction:** `{push_res.get('transaction_id')}` | **Success:** `{push_res.get('success_count')}` | **Failed:** `{push_res.get('failed_count')}`")
+            if st.button("↩️ Rollback Last Transaction"):
+                rb_res = global_agent_pipeline.rollback_push(push_res["transaction_id"])
+                st.warning(f"Rollback status: {rb_res.get('status')}. Reverted {rb_res.get('reverted_records_count')} records.")
+                st.rerun()
 
-    audit_entries = summary.get("audit_trail", [])
-    if audit_entries:
-        audit_df = pd.DataFrame(audit_entries)
-        st.dataframe(audit_df[["timestamp", "actor", "action", "entity_id", "field", "reason"]], use_container_width=True)
-    else:
-        st.info("No audit entries recorded yet.")
+        st.markdown("#### Live Destination Database State")
+        db_data = summary.get("target_database_preview", [])
+        if db_data:
+            st.dataframe(pd.DataFrame(db_data), use_container_width=True)
+        else:
+            st.info("Target database is empty.")
+
+    # 6. AUDIT TRAIL
+    elif insp_subtab == "Audit Trail":
+        st.markdown("""
+        <div class="pane-header">
+          <div>
+            <h2>Transformation Audit Trail</h2>
+            <p class="pane-desc">Immutable verification log tracking every autonomous modification, merge, and consultant intervention.</p>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        audit_entries = summary.get("audit_trail", [])
+        if audit_entries:
+            audit_df = pd.DataFrame(audit_entries)
+            st.dataframe(audit_df[["timestamp", "actor", "action", "entity_id", "field", "reason"]], use_container_width=True)
+        else:
+            st.info("No audit entries recorded yet.")

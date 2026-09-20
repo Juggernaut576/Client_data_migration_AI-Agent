@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 1. TABS LOGIC WITH PERSISTENCE
 function initTabs() {
   const tabs = document.querySelectorAll('.tab-btn');
-  const savedTab = sessionStorage.getItem('active_tab') || 'tab-escalations';
+  const savedTab = 'tab-chat';
 
   function switchTab(tabId) {
     tabs.forEach(t => {

@@ -3,7 +3,7 @@
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/tests-8%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-9%20passed-brightgreen.svg)]()
 
 > 🌐 **Live Cloud Deployment**: [https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/](https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/)
 
@@ -16,19 +16,40 @@ An autonomous, Human-in-the-Loop (HITL) AI Data Migration Agent built for Forwar
 Access the live cloud deployment on Streamlit Community Cloud:
 👉 **[https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/](https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/)**
 
+### 💬 Conversational Commands
+
 You can drive the **entire migration lifecycle** directly through conversational chat commands:
 
 | Step | What to Type in Chat | Action Performed |
 | :--- | :--- | :--- |
-| **1. Ingest & Reconcile** | `Run pipeline` | Ingests CSVs & Excel, performs schema mapping, cleans, deduplicates, and reports KPIs. |
+| **1. Ingest & Reconcile** | `Run pipeline` | Ingests CSVs & Excel, performs schema mapping, cleans, deduplicates, and unlocks dataset download. |
 | **2. Inspect Escalations** | `Show escalations` | Lists open queue items with entity IDs, error reasons, and recommended fixes. |
-| **3. Approve All** | `Approve all` | Resolves all pending escalations using defensible agent recommendations. |
+| **3. Approve All** | `Approve all` | Resolves all pending escalations; unlocks 100% verified dataset export. |
 | **4. Manual Override** | `Set Carlos salary to 105000` | Re-evaluates record with your custom value and moves it to the valid pool. |
 | **5. Delta Solutioning** | `Show deltas` | Previews new vs. updated records (with field-level diffs like Bob Johnson's salary update). |
 | **6. Target Sync** | `Push to target` | Commits all validated records to Darwinbox with an immutable transaction ID. |
 | **7. Instant Rollback** | `Rollback` | Reverts the target database to its exact snapshot before that transaction. |
-| **8. Reset** | `Reset` | Restores memory and target database back to seed state. |
-| **9. Export Data** | `Export CSV` | Generates a direct download link for `cleaned_target_employees.csv`. |
+| **8. Reset** | `Reset` | Restores memory and target database back to seed state and locks download. |
+| **9. Export Data** | `Export CSV` | Informs you of export availability and location of the download button. |
+
+---
+
+## 📥 Clean Dataset Download Lifecycle
+
+The clean dataset download button is intentionally **hidden on initial page load and after session reset** to ensure no un-run or stale dataset is ever provided prematurely.
+
+### ⏱️ Progression & Visibility:
+
+| Pipeline State | Trigger | Download Button Visibility & Label |
+| :--- | :--- | :--- |
+| **Initial / Reset** | Fresh page load or `🔄 Reset` | **Hidden**. A status banner guides you: *Clean Dataset Download Unlocks After Pipeline Execution*. |
+| **Stage 1: Processed** | Click `▶ Run Migration Pipeline` or say `Run pipeline` | **Revealed at top-right header**: `📥 Download Clean CSV (<N> Verified)`. Verified non-conflicting records are available immediately. |
+| **Stage 2: Fully Processed (100%)** | Say `Approve all` in chat or resolve all queue items | **Updated at top-right header**: `📥 Download Clean Dataset (100% Verified)`. All records are verified and exportable. |
+
+Where to download once unlocked:
+1. **Top-Right Header**: Directly beside `▶ Run Migration Pipeline` and `🔄 Reset`.
+2. **Status Banner**: Alert box just below the header confirming exact record count.
+3. **Data Inspector**: Inside *🔍 Raw Data Inspector & Audit Logs* $\rightarrow$ *Target Dataset* $\rightarrow$ *📥 Export Cleaned Dataset CSV*.
 
 ---
 
@@ -92,7 +113,7 @@ Client_data_migration_AI-Agent/
 │   ├── sample_sources/            # Raw client files (CSV & XLSX)
 │   └── migrated_output/           # Cleaned output CSV & persistent audit logs
 ├── frontend/                      # Standalone Web Client (HTML/CSS/JS)
-└── tests/                         # Full automated test suite (8 tests)
+└── tests/                         # Full automated test suite (9 tests)
 ```
 
 ---
@@ -143,7 +164,7 @@ python -m pytest tests
 
 Output:
 ```
-======================== 8 passed, 1 warning in ~2.5s =========================
+======================== 9 passed, 1 warning in ~3.5s =========================
 ```
 
 ---

@@ -1,31 +1,59 @@
 # Enterprise AI Agent: Client Data Migration & Integration
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
+[![Tests](https://img.shields.io/badge/tests-8%20passed-brightgreen.svg)]()
+
+> 🌐 **Live Cloud Deployment**: [https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/](https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/)
+
 An autonomous, Human-in-the-Loop (HITL) AI Data Migration Agent built for Forward Deployed Engineers and Implementation Consultants. The agent ingests heterogeneous client HR/CRM exports (CSV & Excel), autonomously maps schemas, normalizes data, respects a defensible escalation boundary, performs delta analysis, and pushes to a mock target platform with full transaction rollback support.
 
 ---
 
-## 🌟 Key Features
+## 🚀 Live Cloud Deployment & Quick Demo
+
+Access the live cloud deployment on Streamlit Community Cloud:
+👉 **[https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/](https://clientdatamigrationai-agent-k3fa94duqoj5hhskk945kx.streamlit.app/)**
+
+You can drive the **entire migration lifecycle** directly through conversational chat commands:
+
+| Step | What to Type in Chat | Action Performed |
+| :--- | :--- | :--- |
+| **1. Ingest & Reconcile** | `Run pipeline` | Ingests CSVs & Excel, performs schema mapping, cleans, deduplicates, and reports KPIs. |
+| **2. Inspect Escalations** | `Show escalations` | Lists open queue items with entity IDs, error reasons, and recommended fixes. |
+| **3. Approve All** | `Approve all` | Resolves all pending escalations using defensible agent recommendations. |
+| **4. Manual Override** | `Set Carlos salary to 105000` | Re-evaluates record with your custom value and moves it to the valid pool. |
+| **5. Delta Solutioning** | `Show deltas` | Previews new vs. updated records (with field-level diffs like Bob Johnson's salary update). |
+| **6. Target Sync** | `Push to target` | Commits all validated records to Darwinbox with an immutable transaction ID. |
+| **7. Instant Rollback** | `Rollback` | Reverts the target database to its exact snapshot before that transaction. |
+| **8. Reset** | `Reset` | Restores memory and target database back to seed state. |
+| **9. Export Data** | `Export CSV` | Generates a direct download link for `cleaned_target_employees.csv`. |
+
+---
+
+## 🌟 Key Architectural Pillars
 
 1. **Multi-File Ingestion (`CSV` & `Excel`):**
    - Ingests multiple source exports representing the same entity with distinct column headers, orderings, and formats.
    - Automatically preserves source file provenance (`_source_file`, `_source_row`).
+   - Supports arbitrary number of files simultaneously.
 
 2. **Autonomous Schema Mapping & Cleaning:**
-   - Heuristic and semantic mapping with confidence scoring ($0.0 - 1.0$) evaluating name similarity, aliases, and value patterns (regex, date/phone/email heuristics).
+   - Heuristic and semantic mapping with confidence scoring ($0.0 - 1.0$) evaluating name similarity, aliases, and value patterns.
    - Autonomous sanitization: converts mixed dates (`DD/MM/YYYY`, `YYYY-MM-DD`, `12-Nov-2019`) to standard ISO 8601 (`YYYY-MM-DD`), normalizes whitespace, proper casing, and phone numbers.
-   - Autonomous duplicate record consolidation across files without pestering the consultant.
+   - Autonomous duplicate record consolidation across files.
 
 3. **Defensible Escalation Boundary:**
    - Stops to request human intervention **only** when genuinely ambiguous:
-     - **Schema Ambiguity:** Column header matches multiple target fields with near-equal scores or low confidence.
+     - **Schema Ambiguity:** Column header matches multiple target fields with near-equal scores.
      - **Data Conflicts:** Duplicate records for an employee contain contradictory non-null attributes (e.g. Sales vs Operations).
      - **Constraint Violations:** Values that violate target schema constraints (e.g. negative compensation, unparseable dates).
    - Provides full context: source file, row, agent rationale, confidence score, and one-click recommended resolutions.
 
-4. **Human-in-the-Loop (HITL) Web UI:**
-   - Real-time pipeline visualizer and live KPI metrics.
-   - Escalation resolution queue: **Approve Suggestion**, **Manual Override**, or **Reject Record**.
-   - Side-by-side field diff viewer and immutable audit trail.
+4. **Human-in-the-Loop (HITL) Unified AI Copilot UI:**
+   - Interactive chat window with real-time smooth auto-scrolling on response generation.
+   - Live KPI status cards and expandable raw data inspector for table/audit reviews.
 
 5. **Delta Solutioning:**
    - Analyzes incoming dataset against the destination HR database to classify records into:
@@ -45,9 +73,10 @@ An autonomous, Human-in-the-Loop (HITL) AI Data Migration Agent built for Forwar
 
 ```
 Client_data_migration_AI-Agent/
+├── streamlit_app.py               # Streamlit application (Cloud Deployment entrypoint)
+├── requirements.txt               # Dependencies for Streamlit Cloud & local execution
 ├── backend/
 │   ├── app.py                     # FastAPI application & REST endpoints
-│   ├── requirements.txt           # Python dependencies
 │   └── core/
 │       ├── schema.py              # Target schema definition & Pydantic models
 │       ├── ingestion.py           # Multi-file parser (CSV & Excel)
@@ -57,110 +86,76 @@ Client_data_migration_AI-Agent/
 │       ├── escalation.py          # Defensible escalation boundary manager
 │       ├── delta.py               # Delta solutioning engine against target state
 │       ├── mock_target.py         # Mock target platform API with rollback & retry
+│       ├── llm_agent.py           # Conversational Agentic Copilot & Groq LLM reasoner
 │       └── audit.py               # Immutable transformation audit logger
-├── frontend/
-│   ├── index.html                 # Modern glassmorphic SPA dashboard
-│   ├── style.css                  # Responsive dark-theme styling
-│   └── app.js                     # Dynamic UI interactions & API bindings
 ├── data/
-│   ├── target_schema.json         # Standard Darwinbox HR Employee Schema
-│   ├── generate_samples.py        # Generator for test exports
-│   └── sample_sources/
-│       ├── source_a_hris.csv      # Source 1 (inconsistent dates, dirty salary)
-│       ├── source_b_payroll.xlsx   # Source 2 (Excel format, duplicates, conflicting records)
-│       └── source_c_crm_staff.csv # Source 3 (contractors, unparseable dates)
-├── tests/
-│   ├── test_pipeline.py           # Automated end-to-end pipeline tests
-│   └── test_api.py                # FastAPI REST endpoint tests
-├── WRITEUP.md                     # 1-Page Architectural & Escalation Philosophy Write-Up
-└── README.md                      # Setup, documentation, and walkthrough guide
+│   ├── sample_sources/            # Raw client files (CSV & XLSX)
+│   └── migrated_output/           # Cleaned output CSV & persistent audit logs
+├── frontend/                      # Standalone Web Client (HTML/CSS/JS)
+└── tests/                         # Full automated test suite (8 tests)
 ```
 
 ---
 
-## 🚀 Quickstart & Setup
+## 💻 Local Setup & Execution
 
-### 1. Prerequisites
-- Python 3.10 or higher.
-- Git.
-
-### 2. Installation
-Clone the repository and install the dependencies:
+### 1. Clone & Install
 ```bash
-# Clone repository
-git clone <repository-url>
+git clone https://github.com/Juggernaut576/Client_data_migration_AI-Agent.git
 cd Client_data_migration_AI-Agent
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
 
-# Install backend dependencies
-python -m pip install -r backend/requirements.txt
-```
-
-### 3. Run the Application
-Start the FastAPI server:
-```bash
-python backend/app.py
-```
-Or with uvicorn directly:
-```bash
-uvicorn backend.app:app --port 8000 --reload
+pip install -r requirements.txt
 ```
 
-Open your browser and navigate to:
+### 2. Environment Variables (Optional for LLM)
+Create a `.env` file in the root directory:
+```env
+GROQ_API_KEY=gsk_your_groq_api_key
 ```
-http://127.0.0.1:8000/
-```
+*(If no API key is provided, the agent seamlessly uses its built-in local deterministic semantic reasoner).*
 
-Alternatively, you can run the Streamlit UI dashboard:
-```bash
-streamlit run streamlit_app.py
-```
+### 3. Run the Applications
+- **Streamlit App (Recommended)**:
+  ```bash
+  streamlit run streamlit_app.py
+  ```
+  Open `http://localhost:8501`.
+
+- **FastAPI Backend + Web SPA**:
+  ```bash
+  uvicorn backend.app:app --reload --port 8000
+  ```
+  Open `http://127.0.0.1:8000/`.
 
 ---
 
 ## 🧪 Automated Testing
 
-Run the full automated test suite covering unit, pipeline, and API tests:
+Run the full automated test suite covering unit, pipeline, and conversational API tests:
 ```bash
-python -m pytest
+python -m pytest tests
 ```
 
-Expected output:
+Output:
 ```
-tests\test_api.py ...                                                    [ 50%]
-tests\test_pipeline.py ...                                               [100%]
-============================== 6 passed in ~1.3s ==============================
+======================== 8 passed, 1 warning in ~2.5s =========================
 ```
 
 ---
 
-## 🎬 Step-by-Step Demo Walkthrough
+## ☁️ Streamlit Community Cloud Configuration
 
-1. **Launch Dashboard:** Open `http://127.0.0.1:8000/` in your browser.
-2. **Run Sample Ingestion:**
-   - Click the **"Run Sample Ingestion (3 Files)"** button.
-   - The agent ingests `source_a_hris.csv`, `source_b_payroll.xlsx`, and `source_c_crm_staff.csv`.
-3. **Inspect Autonomous Mappings:**
-   - Switch to the **Autonomous Mappings** tab to see how source headers like `DOJ`, `ctc`, `emp_status`, and `division` were autonomously mapped to `hire_date`, `salary`, `status`, and `department` with confidence scores.
-4. **Review HITL Escalation Queue:**
-   - Notice the agent only escalated genuine edge cases:
-     - *Carlos Mendez:* Negative salary (`-$50,000`).
-     - *Fiona Gallagher:* Contradictory department (`Operations` in Payroll vs `Sales` in CRM).
-     - *Hannah Abbott:* Unparseable date format (`invalid-date-format-32/99`).
-   - Click **"Approve Suggestion"** on Carlos Mendez to accept the auto-suggested absolute salary (`$50,000`). Notice Carlos immediately moves into the **Valid Ready Records** pool!
-   - Click **"Manual Edit"** on Fiona Gallagher to assign the confirmed department (`Engineering`).
-5. **Inspect Delta Solutioning:**
-   - Switch to the **Delta Solutioning & Diff** tab.
-   - Observe how `Bob Johnson (EMP-1002)` is flagged as `UPDATE` with a side-by-side visual diff showing before (`$125,000`) and after (`$138,000`), while net-new employees are marked `NEW`.
-6. **Push to Destination Platform & Rollback:**
-   - Switch to the **Target API & Rollback** tab.
-   - Click **"Push to Target Platform"**. All valid records are committed, and a transaction ID is generated (e.g. `TX-ABC1234`).
-   - Inspect the live destination database table.
-   - Click **"Rollback Transaction"** to test transactional safety; the destination database reverts back to its baseline snapshot.
-7. **Audit Trail:**
-   - Open the **Audit Trail** tab to view the immutable log of all actions, actors (`AGENT` vs `HUMAN`), timestamps, and confidence ratings.
-
----
-
-## 📄 Documentation
-
-- Refer to [WRITEUP.md](WRITEUP.md) for the 1-page writeup detailing the escalation philosophy, mathematical threshold rationale, and future roadmap.
+When deploying on [Streamlit Community Cloud](https://share.streamlit.io):
+1. **Repository**: `Juggernaut576/Client_data_migration_AI-Agent`
+2. **Branch**: `master`
+3. **Main file path**: `streamlit_app.py`
+4. **Secrets** (under *Advanced settings*):
+   ```toml
+   GROQ_API_KEY = "gsk_your_key_here"
+   ```
+   The agent automatically reads credentials from `st.secrets` in the cloud environment.

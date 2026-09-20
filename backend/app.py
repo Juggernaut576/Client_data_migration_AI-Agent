@@ -107,6 +107,17 @@ def rollback_transaction(req: RollbackRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/export/csv")
+def export_cleaned_csv():
+    output_csv = os.path.join(BASE_DIR, "data", "migrated_output", "cleaned_target_employees.csv")
+    if not os.path.exists(output_csv):
+        raise HTTPException(status_code=404, detail="No migrated output found. Run the pipeline first.")
+    return FileResponse(
+        output_csv,
+        media_type="text/csv",
+        filename="cleaned_target_employees.csv"
+    )
+
 @app.post("/api/target/reset")
 def reset_all():
     global_pipeline_state.reset()

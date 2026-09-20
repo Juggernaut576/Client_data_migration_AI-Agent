@@ -1,0 +1,7 @@
+employee_id,first_name,last_name,email,department,job_title,hire_date,salary,status,phone_number
+EMP-1001,Alice,Smith,alice.smith@acme-corp.com,Engineering,Senior Staff Engineer,2021-01-15,145000.0,ACTIVE,+15552345678
+EMP-1002,Bob,Johnson,bob.johnson@acme-corp.com,Product,Lead Product Manager,2020-06-01,138000.0,ACTIVE,+15558765432
+EMP-1004,Diana,Prince,diana.prince@acme-corp.com,Human Resources,Hr Generalist,2022-03-15,88000.0,ON_LEAVE,+15557890123
+EMP-1005,Evan,Wright,evan.w@acme-corp.com,Finance,Financial Analyst,2023-05-18,95000.0,ACTIVE,+15553216549
+EMP-1007,George,Miller,george.miller@acme-corp.com,Customer Success,Cs Representative,2023-11-01,72000.0,ACTIVE,+15551112233
+EMP-1003,Carlos,Mendez,carlos.m@acme-corp.com,Sales,Account Executive,2019-11-12,50000.0,ACTIVE,+15554567890

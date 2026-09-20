@@ -1,3 +1,6 @@
+import os
+import json
+import pandas as pd
 from typing import List, Dict, Any, Optional
 from backend.core.schema import target_schema
 from backend.core.ingestion import IngestionEngine, IngestedSource
@@ -138,7 +141,24 @@ class MigrationAgentPipeline:
         deltas = DeltaEngine.compute_delta(valid_records, target_db)
         global_pipeline_state.deltas = [d.to_dict() for d in deltas]
 
+        self.persist_output_to_disk()
         return self.get_summary()
+
+    def persist_output_to_disk(self):
+        """Persists corrected records and audit trail into data/migrated_output/"""
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        output_dir = os.path.join(base_dir, "data", "migrated_output")
+        os.makedirs(output_dir, exist_ok=True)
+
+        if global_pipeline_state.valid_records:
+            clean_rows = [{k: v for k, v in r.items() if not k.startswith("_")} for r in global_pipeline_state.valid_records]
+            df = pd.DataFrame(clean_rows)
+            csv_path = os.path.join(output_dir, "cleaned_target_employees.csv")
+            df.to_csv(csv_path, index=False)
+
+        audit_path = os.path.join(output_dir, "migration_audit_trail.json")
+        with open(audit_path, "w", encoding="utf-8") as f:
+            json.dump(global_audit.get_entries(), f, indent=2)
 
     def resolve_escalation_and_reprocess(
         self,
@@ -192,6 +212,7 @@ class MigrationAgentPipeline:
                             global_pipeline_state.deltas = [d.to_dict() for d in deltas]
                     break
 
+        self.persist_output_to_disk()
         return self.get_summary()
 
     def push_to_target(self) -> Dict[str, Any]:

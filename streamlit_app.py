@@ -187,9 +187,9 @@ with head_col2:
     sample_files_list = [p for p in glob.glob(os.path.join(DATA_DIR, "*.*")) if p.endswith((".csv", ".xlsx", ".xls"))]
 
     if is_processed and csv_bytes:
-        act_col1, act_col2, act_col3 = st.columns([1.1, 1.3, 0.8])
+        act_col1, act_col2, act_col3 = st.columns([1.2, 1.3, 0.7])
         with act_col1:
-            if st.button("▶ Run Pipeline", type="primary", use_container_width=True):
+            if st.button("▶ Run Migration Pipeline", type="primary", use_container_width=True, key="btn_run_pipe_processed"):
                 file_inputs = [{"path": p} for p in sample_files_list]
                 with st.spinner("Processing files through autonomous pipeline..."):
                     global_agent_pipeline.run_pipeline(file_inputs)
@@ -200,28 +200,41 @@ with head_col2:
                 data=csv_bytes,
                 file_name="cleaned_target_employees.csv",
                 mime="text/csv",
-                use_container_width=True
+                use_container_width=True,
+                key="btn_download_top_bar"
             )
         with act_col3:
-            if st.button("🔄 Reset", use_container_width=True):
+            if st.button("🔄 Reset", use_container_width=True, key="btn_reset_processed"):
                 global_pipeline_state.reset()
                 global_mock_target.reset_to_seed()
                 st.rerun()
     else:
-        act_col1, act_col2 = st.columns([1.4, 0.9])
+        act_col1, act_col2 = st.columns([1.4, 0.8])
         with act_col1:
-            if st.button("▶ Run Migration Pipeline", type="primary", use_container_width=True):
+            if st.button("▶ Run Migration Pipeline", type="primary", use_container_width=True, key="btn_run_pipe_unrun"):
                 file_inputs = [{"path": p} for p in sample_files_list]
                 with st.spinner("Processing files through autonomous pipeline..."):
                     global_agent_pipeline.run_pipeline(file_inputs)
                 st.rerun()
         with act_col2:
-            if st.button("🔄 Reset", use_container_width=True):
+            if st.button("🔄 Reset", use_container_width=True, key="btn_reset_unrun"):
                 global_pipeline_state.reset()
                 global_mock_target.reset_to_seed()
                 st.rerun()
 
-st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
+
+# STATUS GUIDANCE BANNER
+if is_processed and csv_bytes:
+    esc_count = summary.get("pending_escalations_count", 0)
+    if esc_count == 0:
+        st.success(f"🎉 **Dataset Fully Processed & Verified (100%)** — All {len(valid_records)} records are validated against Darwinbox schema. Click **`{dl_label}`** at the top right to download!")
+    else:
+        st.info(f"⚡ **Pipeline Executed:** **{len(valid_records)} verified records** are ready for download at the top right. ({esc_count} edge-case(s) paused in Escalation Queue — say **`Approve all`** to verify 100% of records).")
+else:
+    st.info("💡 **Clean Dataset Download Unlocks After Pipeline Execution**: Click **`▶ Run Migration Pipeline`** above or type **`Run pipeline`** in the AI Copilot below to process data and reveal the download button.")
+
+st.markdown("<div style='height: 6px;'></div>", unsafe_allow_html=True)
 
 # RENDER IDENTICAL KPI SUMMARY CARDS
 st.markdown(f"""

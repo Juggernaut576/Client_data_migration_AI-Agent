@@ -597,8 +597,8 @@ Respond strictly in JSON format:
                     "summary": updated
                 }
 
-        # --- L. EXPORT CSV ---
-        if re.search(r"\b((export|download)\s+(the\s+)?(csv|cleaned|data))\b", lower_msg):
+        # --- L. EXPORT CSV / DOWNLOAD INQUIRY ---
+        if re.search(r"\b((export|download)\s+(the\s+)?(csv|cleaned|data)|(when|how)\s+(will|can|does)\s+(it|the\s+button|download)\s+(show|appear|come)|(where|why)\s+(is\s+)?(the\s+)?(download|button|clean)|not\s+coming)\b", lower_msg):
             cur_summary = pipeline.get_summary() if pipeline else state
             valid_c = cur_summary.get("valid_count", 0)
             raw_c = cur_summary.get("raw_records_count", 0)
@@ -606,9 +606,14 @@ Respond strictly in JSON format:
             if not valid_c or raw_c == 0:
                 return {
                     "reply": (
-                        "⚠️ **Pipeline Not Executed Yet**\n\n"
-                        "No cleaned dataset is available to download because the ingestion pipeline has not been executed yet.\n\n"
-                        "👉 Say **`Run pipeline`** or click the **▶ Run Migration Pipeline** button at the top to process the files first. Once processed, the **Download Clean CSV** button will appear automatically!"
+                        "ℹ️ **When will the Download Button show?**\n\n"
+                        "The **`Download Clean CSV`** button is hidden right now because the migration pipeline has not been executed yet.\n\n"
+                        "### 🚀 How to make it appear:\n"
+                        "1. Say **`Run pipeline`** right here in this chat, OR\n"
+                        "2. Click the purple **`▶ Run Migration Pipeline`** button at the top-right header.\n\n"
+                        "### ⏱️ Progression:\n"
+                        "- **Immediately upon running**: The agent cleans, dedupes, and validates the data. The **Download Clean CSV** button appears at the top right!\n"
+                        "- **Fully Processed (100%)**: Say **`Approve all`** to resolve the edge-cases, unlocking the 100% verified complete dataset."
                     ),
                     "action_taken": None,
                     "summary": cur_summary
@@ -616,11 +621,10 @@ Respond strictly in JSON format:
 
             return {
                 "reply": (
-                    f"📥 **Cleaned Target Dataset Export**\n\n"
-                    f"The dataset is fully processed and normalized against Darwinbox schema:\n\n"
-                    f"- **Verified Records**: {valid_c} records\n"
+                    f"📥 **Cleaned Dataset is Ready for Download!**\n\n"
+                    f"- **Verified Records**: {valid_c} records ready\n"
                     f"- **Pending Escalations**: {cur_summary.get('pending_escalations_count', 0)}\n\n"
-                    f"👉 Click the **📥 Download Clean CSV** button at the top of your screen to download `cleaned_target_employees.csv`."
+                    f"👉 **Where it is**: Look at the top-right header next to the Run and Reset buttons for **`📥 Download Clean CSV`**!"
                 ),
                 "action_taken": None,
                 "summary": cur_summary

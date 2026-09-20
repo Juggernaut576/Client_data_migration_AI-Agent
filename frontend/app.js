@@ -533,6 +533,19 @@ async function sendChatMessage(userText) {
   const now = new Date();
   const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  function scrollToLatest() {
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+      if (container.lastElementChild) {
+        container.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }
+    const inputEl = document.getElementById('chat-input');
+    if (inputEl) {
+      inputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
   // 1. Render User Message
   const userHtml = `
     <div class="chat-msg chat-msg-user">
@@ -544,7 +557,7 @@ async function sendChatMessage(userText) {
     </div>
   `;
   container.insertAdjacentHTML('beforeend', userHtml);
-  container.scrollTop = container.scrollHeight;
+  scrollToLatest();
 
   // Add to local history
   chatHistory.push({ role: 'user', content: userText });
@@ -565,7 +578,7 @@ async function sendChatMessage(userText) {
     </div>
   `;
   container.insertAdjacentHTML('beforeend', typingHtml);
-  container.scrollTop = container.scrollHeight;
+  scrollToLatest();
 
   // 3. Post to /api/chat
   try {
@@ -598,7 +611,8 @@ async function sendChatMessage(userText) {
       </div>
     `;
     container.insertAdjacentHTML('beforeend', agentHtml);
-    container.scrollTop = container.scrollHeight;
+    scrollToLatest();
+    setTimeout(scrollToLatest, 100);
 
     // Add to history
     chatHistory.push({ role: 'assistant', content: replyText });
@@ -622,7 +636,8 @@ async function sendChatMessage(userText) {
       </div>
     `;
     container.insertAdjacentHTML('beforeend', errorHtml);
-    container.scrollTop = container.scrollHeight;
+    scrollToLatest();
+  }
   }
 }
 

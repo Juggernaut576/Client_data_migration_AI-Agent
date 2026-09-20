@@ -3,6 +3,7 @@ import glob
 import json
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 # Configure page layout
 st.set_page_config(
@@ -401,6 +402,37 @@ if active_tab == "chat":
         with st.chat_message(msg["role"], avatar="🤖" if msg["role"] == "assistant" else "👤"):
             st.markdown(msg["content"])
 
+    def auto_scroll_to_chat():
+        components.html(
+            """
+            <script>
+            function doScroll() {
+                try {
+                    const chatInput = window.parent.document.querySelector('div[data-testid="stChatInput"]')
+                        || window.parent.document.querySelector('.stChatInput');
+                    if (chatInput) {
+                        chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        return;
+                    }
+                    const main = window.parent.document.querySelector('.main')
+                        || window.parent.document.querySelector('section.main')
+                        || window.parent.document.documentElement
+                        || window.parent.document.body;
+                    if (main) {
+                        main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' });
+                    }
+                } catch (e) {}
+            }
+            doScroll();
+            setTimeout(doScroll, 80);
+            setTimeout(doScroll, 250);
+            setTimeout(doScroll, 500);
+            </script>
+            """,
+            height=0,
+            width=0
+        )
+
     # Chat input
     user_input = st.chat_input("Ask a question or enter a command (e.g. 'Run pipeline', 'Approve all', 'Push to target')...")
 
@@ -409,8 +441,11 @@ if active_tab == "chat":
         with st.chat_message("user", avatar="👤"):
             st.markdown(user_input)
 
+        auto_scroll_to_chat()
+
         with st.chat_message("assistant", avatar="🤖"):
             with st.spinner("Agent executing..."):
+                auto_scroll_to_chat()
                 response = global_llm_reasoner.chat(
                     user_message=user_input,
                     history=st.session_state["chat_history"][-6:],
@@ -420,8 +455,13 @@ if active_tab == "chat":
                 reply = response.get("reply", "I processed your request.")
                 st.markdown(reply)
                 st.session_state["chat_history"].append({"role": "assistant", "content": reply})
+                auto_scroll_to_chat()
                 if response.get("action_taken"):
                     st.rerun()
+
+    # Automatically ensure chat bottom is in view
+    if len(st.session_state["chat_history"]) > 1:
+        auto_scroll_to_chat()
 
 # 1. ESCALATION QUEUE (HITL)
 elif active_tab == "escalations":

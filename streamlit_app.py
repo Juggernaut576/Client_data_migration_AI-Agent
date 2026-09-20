@@ -24,13 +24,13 @@ DATA_DIR = os.path.join(BASE_DIR, "data", "sample_sources")
 st.markdown("""
 <style>
     .main-title { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.2rem; }
-    .subtitle { color: #8892b0; font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem; }
     .status-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
-    .tag-conflict { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
-    .tag-validation { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .tag-ambiguity { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
-    .diff-before { background: rgba(244, 63, 94, 0.2); color: #fca5a5; text-decoration: line-through; padding: 2px 6px; border-radius: 4px; }
-    .diff-after { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; padding: 2px 6px; border-radius: 4px; }
+    .tag-conflict { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+    .tag-validation { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .tag-ambiguity { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+    .diff-before { background: #fff1f2; color: #be123c; text-decoration: line-through; padding: 2px 6px; border-radius: 4px; }
+    .diff-after { background: #ecfdf5; color: #047857; padding: 2px 6px; border-radius: 4px; }
 </style>
 """, unsafe_allow_html=True)
 

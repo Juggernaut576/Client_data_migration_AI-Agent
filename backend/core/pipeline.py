@@ -23,6 +23,7 @@ class PipelineState:
         self.quarantined_records: List[Dict[str, Any]] = []
         self.deltas: List[Dict[str, Any]] = []
         self.push_result: Optional[Dict[str, Any]] = None
+        self.is_processed: bool = False
 
     def reset(self):
         self.sources.clear()
@@ -34,8 +35,20 @@ class PipelineState:
         self.quarantined_records.clear()
         self.deltas.clear()
         self.push_result = None
+        self.is_processed = False
         global_escalations.clear()
         global_audit.clear()
+
+        # Remove generated output files on reset so un-run states are pristine
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        output_dir = os.path.join(base_dir, "data", "migrated_output")
+        for f_name in ["cleaned_target_employees.csv", "migration_audit_trail.json"]:
+            f_path = os.path.join(output_dir, f_name)
+            if os.path.exists(f_path):
+                try:
+                    os.remove(f_path)
+                except OSError:
+                    pass
 
 global_pipeline_state = PipelineState()
 
@@ -140,6 +153,7 @@ class MigrationAgentPipeline:
         target_db = global_mock_target.get_database()
         deltas = DeltaEngine.compute_delta(valid_records, target_db)
         global_pipeline_state.deltas = [d.to_dict() for d in deltas]
+        global_pipeline_state.is_processed = True
 
         self.persist_output_to_disk()
         return self.get_summary()
@@ -250,6 +264,7 @@ class MigrationAgentPipeline:
             "all_escalations": all_escalations,
             "delta_summary": delta_summary,
             "deltas": global_pipeline_state.deltas,
+            "is_processed": global_pipeline_state.is_processed,
             "valid_records_preview": global_pipeline_state.valid_records[:20],
             "audit_trail": global_audit.get_entries()[-40:],
             "push_result": global_pipeline_state.push_result,

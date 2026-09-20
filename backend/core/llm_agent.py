@@ -241,7 +241,8 @@ Respond strictly in JSON format:
                     f"### 💡 Next Actions:\n"
                     f"- Say **`Show escalations`** to inspect the items needing attention.\n"
                     f"- Say **`Approve all`** to accept all recommended resolutions at once.\n"
-                    f"- Say **`Show deltas`** to see incoming changes versus the target system."
+                    f"- Say **`Show deltas`** to see incoming changes versus the target system.\n"
+                    f"- 📥 **Cleaned Dataset Ready**: The **Download Clean CSV** button is now unlocked at the top of the interface."
                 )
                 return {
                     "reply": reply,
@@ -599,13 +600,27 @@ Respond strictly in JSON format:
         # --- L. EXPORT CSV ---
         if re.search(r"\b((export|download)\s+(the\s+)?(csv|cleaned|data))\b", lower_msg):
             cur_summary = pipeline.get_summary() if pipeline else state
+            valid_c = cur_summary.get("valid_count", 0)
+            raw_c = cur_summary.get("raw_records_count", 0)
+
+            if not valid_c or raw_c == 0:
+                return {
+                    "reply": (
+                        "⚠️ **Pipeline Not Executed Yet**\n\n"
+                        "No cleaned dataset is available to download because the ingestion pipeline has not been executed yet.\n\n"
+                        "👉 Say **`Run pipeline`** or click the **▶ Run Migration Pipeline** button at the top to process the files first. Once processed, the **Download Clean CSV** button will appear automatically!"
+                    ),
+                    "action_taken": None,
+                    "summary": cur_summary
+                }
+
             return {
                 "reply": (
                     f"📥 **Cleaned Target Dataset Export**\n\n"
-                    f"You can download the verified, normalized CSV directly here:\n\n"
-                    f"👉 **[Download cleaned_target_employees.csv](/api/export/csv)**\n\n"
-                    f"- **Records Available**: {cur_summary.get('valid_count', 0)} verified employees\n"
-                    f"- **Schema**: Fully validated against Darwinbox target schema."
+                    f"The dataset is fully processed and normalized against Darwinbox schema:\n\n"
+                    f"- **Verified Records**: {valid_c} records\n"
+                    f"- **Pending Escalations**: {cur_summary.get('pending_escalations_count', 0)}\n\n"
+                    f"👉 Click the **📥 Download Clean CSV** button at the top of your screen to download `cleaned_target_employees.csv`."
                 ),
                 "action_taken": None,
                 "summary": cur_summary

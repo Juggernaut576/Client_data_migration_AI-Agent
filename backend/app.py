@@ -130,6 +130,11 @@ def rollback_transaction(req: RollbackRequest):
 
 @app.get("/api/export/csv")
 def export_cleaned_csv():
+    if global_pipeline_state.raw_records_count == 0 or not global_pipeline_state.valid_records:
+        raise HTTPException(
+            status_code=400,
+            detail="Pipeline has not been executed yet. Run the pipeline first to generate the cleaned dataset."
+        )
     output_csv = os.path.join(BASE_DIR, "data", "migrated_output", "cleaned_target_employees.csv")
     if not os.path.exists(output_csv):
         raise HTTPException(status_code=404, detail="No migrated output found. Run the pipeline first.")

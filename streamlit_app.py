@@ -149,19 +149,21 @@ st.markdown("""
 # Fetch Current Pipeline Summary
 summary = global_agent_pipeline.get_summary()
 
-# PREPARE DOWNLOAD DATA FOR TOP HEADER BUTTON
-valid_records = summary.get("valid_records_preview", [])
-if valid_records:
+# Check pipeline execution state: only consider processed if pipeline has run with raw records & valid records exist
+is_processed = summary.get("is_processed", False) and summary.get("raw_records_count", 0) > 0 and len(global_pipeline_state.valid_records) > 0
+valid_records = global_pipeline_state.valid_records if is_processed else []
+
+if is_processed and valid_records:
     clean_df = pd.DataFrame([{k: v for k, v in r.items() if not k.startswith("_")} for r in valid_records])
     csv_bytes = clean_df.to_csv(index=False).encode('utf-8')
-elif os.path.exists(os.path.join(BASE_DIR, "data", "migrated_output", "cleaned_target_employees.csv")):
-    with open(os.path.join(BASE_DIR, "data", "migrated_output", "cleaned_target_employees.csv"), "rb") as f:
-        csv_bytes = f.read()
+    dl_label = f"📥 Download Clean CSV ({len(valid_records)})" if summary.get("pending_escalations_count", 0) > 0 else "📥 Download Clean Dataset (100% Verified)"
 else:
-    csv_bytes = b"employee_id,first_name,last_name,email,department,job_title,hire_date,salary,status,phone_number\n"
+    clean_df = pd.DataFrame()
+    csv_bytes = None
+    dl_label = "📥 Download Clean CSV"
 
-# TOP HEADER WITH IDENTICAL ACTIONS
-head_col1, head_col2 = st.columns([1.8, 1.2])
+# TOP HEADER WITH DYNAMIC ACTIONS
+head_col1, head_col2 = st.columns([1.7, 1.3])
 
 with head_col1:
     st.markdown("""
@@ -182,27 +184,42 @@ with head_col1:
 
 with head_col2:
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    act_col1, act_col2, act_col3 = st.columns([1.2, 1.1, 0.8])
     sample_files_list = [p for p in glob.glob(os.path.join(DATA_DIR, "*.*")) if p.endswith((".csv", ".xlsx", ".xls"))]
-    with act_col1:
-        if st.button("▶ Run Migration Pipeline", type="primary", use_container_width=True):
-            file_inputs = [{"path": p} for p in sample_files_list]
-            with st.spinner("Processing files through autonomous pipeline..."):
-                global_agent_pipeline.run_pipeline(file_inputs)
-            st.rerun()
-    with act_col2:
-        st.download_button(
-            label="📥 Download Cleaned CSV",
-            data=csv_bytes,
-            file_name="cleaned_target_employees.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-    with act_col3:
-        if st.button("🔄 Reset", use_container_width=True):
-            global_pipeline_state.reset()
-            global_mock_target.reset_to_seed()
-            st.rerun()
+
+    if is_processed and csv_bytes:
+        act_col1, act_col2, act_col3 = st.columns([1.1, 1.3, 0.8])
+        with act_col1:
+            if st.button("▶ Run Pipeline", type="primary", use_container_width=True):
+                file_inputs = [{"path": p} for p in sample_files_list]
+                with st.spinner("Processing files through autonomous pipeline..."):
+                    global_agent_pipeline.run_pipeline(file_inputs)
+                st.rerun()
+        with act_col2:
+            st.download_button(
+                label=dl_label,
+                data=csv_bytes,
+                file_name="cleaned_target_employees.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+        with act_col3:
+            if st.button("🔄 Reset", use_container_width=True):
+                global_pipeline_state.reset()
+                global_mock_target.reset_to_seed()
+                st.rerun()
+    else:
+        act_col1, act_col2 = st.columns([1.4, 0.9])
+        with act_col1:
+            if st.button("▶ Run Migration Pipeline", type="primary", use_container_width=True):
+                file_inputs = [{"path": p} for p in sample_files_list]
+                with st.spinner("Processing files through autonomous pipeline..."):
+                    global_agent_pipeline.run_pipeline(file_inputs)
+                st.rerun()
+        with act_col2:
+            if st.button("🔄 Reset", use_container_width=True):
+                global_pipeline_state.reset()
+                global_mock_target.reset_to_seed()
+                st.rerun()
 
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
@@ -591,8 +608,16 @@ with st.expander("🔍 Raw Data Inspector & Audit Logs (Optional)", expanded=Fal
         </div>
         """, unsafe_allow_html=True)
 
-        if valid_records:
+        if is_processed and valid_records:
             st.dataframe(clean_df, use_container_width=True)
+            if csv_bytes:
+                st.download_button(
+                    label="📥 Export Cleaned Dataset CSV",
+                    data=csv_bytes,
+                    file_name="cleaned_target_employees.csv",
+                    mime="text/csv",
+                    key="btn_dl_target_dataset"
+                )
         else:
             st.info("No validated records loaded yet. Run the pipeline above.")
 

@@ -118,3 +118,29 @@ def test_chat_actions_end_to_end():
     assert data["action_taken"] == "ROLLBACK"
     assert "Rolled Back Successfully" in data["reply"]
 
+
+def test_export_csv_only_when_processed():
+    # 1. Reset state so pipeline is un-run
+    client.post("/api/target/reset")
+
+    # 2. Export attempt before pipeline run should be rejected
+    res_pre = client.get("/api/export/csv")
+    assert res_pre.status_code == 400
+    assert "not been executed" in res_pre.json()["detail"].lower()
+
+    # Chat attempt before pipeline run should explain it needs execution first
+    chat_pre = client.post("/api/chat", json={"message": "Download clean dataset", "history": []})
+    assert chat_pre.status_code == 200
+    assert "not executed yet" in chat_pre.json()["reply"].lower() or "run pipeline" in chat_pre.json()["reply"].lower()
+
+    # 3. Run pipeline to process dataset
+    res_run = client.post("/api/pipeline/run-sample")
+    assert res_run.status_code == 200
+
+    # 4. Export attempt after pipeline processing should succeed
+    res_post = client.get("/api/export/csv")
+    assert res_post.status_code == 200
+    assert "text/csv" in res_post.headers["content-type"]
+    assert "employee_id" in res_post.text
+
+

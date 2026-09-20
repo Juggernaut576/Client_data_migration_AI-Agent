@@ -149,11 +149,12 @@ function renderDashboard(data) {
   setElText('kpi-valid', data.valid_count || 0);
   setElText('kpi-target-db', (data.target_database_preview || []).length);
 
-  // Badges
-  setElText('badge-escalation-count', data.pending_escalations_count || 0);
-  setElText('badge-delta-count', (data.deltas || []).length);
-  setElText('badge-ready-count', data.valid_count || 0);
-  setElText('count-all-esc', data.pending_escalations_count || 0);
+  // Dynamic Export Button
+  const exportBtn = document.getElementById('btn-export-csv');
+  if (exportBtn) {
+    const isProcessed = (data.raw_records_count > 0 && data.valid_count > 0);
+    exportBtn.style.display = isProcessed ? 'inline-flex' : 'none';
+  }
 
   // Render sub-views
   renderEscalations(data.pending_escalations || []);

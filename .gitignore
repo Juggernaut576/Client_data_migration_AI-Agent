@@ -7,3 +7,5 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
+data/migrated_output/*
+!data/migrated_output/.gitkeep

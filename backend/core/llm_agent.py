@@ -23,11 +23,18 @@ class LLMAgentReasoner:
             load_dotenv(override=False)
         except Exception:
             pass
-        return self._custom_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY")
+        return (
+            self._custom_api_key
+            or os.getenv("GROQ_API_KEY")
+            or os.getenv("GEMINI_API_KEY")
+            or os.getenv("OPENAI_API_KEY")
+        )
 
     @property
     def provider(self) -> str:
         key = self.api_key or ""
+        if os.getenv("GROQ_API_KEY") or key.startswith("gsk_"):
+            return "groq"
         if os.getenv("GEMINI_API_KEY") or key.startswith("AIza"):
             return "gemini"
         return "openai"
@@ -286,7 +293,28 @@ Instructions:
         }
 
     def _call_llm(self, prompt: str) -> str:
-        if self.provider == "gemini":
+        if self.provider == "groq":
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            payload = {
+                "model": "openai/gpt-oss-120b",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.2,
+                "max_tokens": 600
+            }
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self.api_key}",
+                    "User-Agent": "Mozilla/5.0"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=12) as res:
+                data = json.loads(res.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"]
+        elif self.provider == "gemini":
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
